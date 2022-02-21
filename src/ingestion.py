@@ -1,4 +1,4 @@
-import json
+import csv
 import os
 import requests
 import hashlib
@@ -17,22 +17,49 @@ def create_hash_for_login(ts):
     return hashed.hexdigest()
 
 def ingest_characters(limit=100):
-    l = []
+    characters = []
 
     ts = datetime.now()
+    try:
+        response = requests.get(BASE_URL.format(
+                    time_stamp=str(ts), type='characters', limit=5, api_key=os.environ['API_KEY'], hash=create_hash_for_login(ts)))
 
-    response = requests.get(BASE_URL.format(
-                time_stamp=str(ts), type='characters', limit=5, api_key=os.environ['API_KEY'], hash=create_hash_for_login(ts)))
+        characters.append(response.json())
+    except:
+        print('oopsie')
 
-    l.append(response.json())
+    print(characters)
+    return characters
 
-    return l
+# ingest_characters()
 
-ingest_characters()
+
+def write_to_csv(character_ids, path="data/character_ids.csv"):
+    ids = []
+    for i in range(0, len(test[0]['data']['results'])):
+        ids.append(test[0]['data']['results'][i]['id'])
+
+    print(ids)
+
+    with open(path, "w+", encoding="utf-8", newline="") as output_file:
+
+        csvwriter = csv.writer(output_file, delimiter=",")
+
+        csvwriter.writerow(['Character_ID'])
+
+        csvwriter.writerows(map(lambda x: [x], ids))
+
+    return os.path.relpath(output_file.name)
+
 
 def read_test():
     id = test[0]['data']['results'][0]['id']
-    print(test[0]['data']['results'][0]['comics']['available'] == test[0]['data']['results'][0]['comics']['returned'])
+
+    for i in range(0, len(test[0]['data']['results'])):
+        print(test[0]['data']['results'][i]['id'])
+
+    # print(test[0]['data']['results'][0]['comics']['available'] == test[0]['data']['results'][0]['comics']['returned'])
 
 
-
+# characters = ingest_characters()
+# write_to_csv(test)
