@@ -33,6 +33,30 @@ def ingest_characters(limit=100):
 
 # ingest_characters()
 
+def generate_link(type, id):
+    ts = datetime.now()
+    return BASE_URL.format(type='characters', time_stamp=str(ts), limit=5, api_key=os.environ['API_KEY'], hash=create_hash_for_login(ts)) + \
+                                        "/{id}/{type}".format(id=id, type=type)
+
+def check_for_further_calls_based_on_character_id(results=None):
+    type = ['comics', 'series', 'stories', 'events']
+    further_links = []
+    for i in range(0, len(test[0]['data']['results'])):
+        for x in type:
+            result = test[0]['data']['results'][i][x]['available'] == test[0]['data']['results'][i][x]['returned']
+            if not result:
+                id = test[0]['data']['results'][i]['id']
+                link = generate_link(x, id)
+                further_links.append(link)
+    print(further_links)
+    return further_links
+
+check_for_further_calls_based_on_character_id()
+
+
+
+
+
 
 def write_to_csv(character_ids, path="data/character_ids.csv"):
     ids = []
