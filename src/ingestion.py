@@ -34,12 +34,12 @@ def ingest_characters(limit=100):
 
 # ingest_characters()
 
-def store_all_characters(character_dict):
-    headers = character_dict[0].keys()
-    with open('data/characters.csv', 'a', encoding='utf8', newline='') as output_file:
-        fc = csv.DictWriter(output_file, fieldnames=headers)
+def store_to_csv(dict, type):
+    # headers = dict[0].keys()
+    with open('data/{type}.csv'.format(type=type), 'a', encoding='utf8', newline='') as output_file:
+        fc = csv.DictWriter(output_file)  # add fieldnames=headers
         fc.writeheader()
-        fc.writerows(character_dict)
+        fc.writerows(dict)
 
 def simplify_character_data(character):
     character_dict = {'character_id': character.get('id', None),
