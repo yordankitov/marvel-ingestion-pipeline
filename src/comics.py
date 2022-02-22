@@ -17,3 +17,5 @@ def simplify_comics_data(comics):
 
     print(character_dict)
     return character_dict
+
+# comics_id,digital_id,title,variant_description,description,date_modified,isbn,upc,diamond_code,ean,issn,format,page_count,print_price
