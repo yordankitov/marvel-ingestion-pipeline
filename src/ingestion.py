@@ -18,11 +18,14 @@ def create_hash_for_login(ts):
 
 def ingest_characters(limit=100):
     characters = []
-
+    x = 0
     try:
-        response = requests.get(generate_url())
-
-        characters.append(response.json())
+        while True:
+            response = requests.get(generate_url(), params={'orderBy': 'name', 'offset': x})
+            response.json()
+            x += 100
+            if x == 100:
+                break
     except:
         print('oopsie')
 
@@ -30,6 +33,27 @@ def ingest_characters(limit=100):
     return characters
 
 # ingest_characters()
+
+def store_all_characters(character_dict):
+    headers = character_dict[0].keys()
+    with open('data/characters.csv', 'a', encoding='utf8', newline='') as output_file:
+        fc = csv.DictWriter(output_file, fieldnames=headers)
+        fc.writeheader()
+        fc.writerows(character_dict)
+
+def simplify_character_data(character):
+    character_dict = {'character_id': character.get('id', None),
+                      'name': character.get('name', None),
+                      'description': character.get('description', None),
+                      'date_modified': character.get('modified', None)
+                      }
+
+    print(character_dict)
+    return character_dict
+
+
+# char = [simplify_character_data(character) for character in test[0]['data']['results']]
+# store_all_characters(char)
 
 def generate_url():
     ts = datetime.now()
@@ -43,31 +67,13 @@ def check_for_further_calls_based_on_character_id(results=None):
         for x in type:
             result = test[0]['data']['results'][i][x]['available'] == test[0]['data']['results'][i][x]['returned']
             if not result:
-                id = test[0]['data']['results'][i]['id']
-                link = generate_url(x, id) + "/{id}/{type}".format(id=id, type=type)
-                further_urls.append(link)
+                character_id = test[0]['data']['results'][i]['id']
+                url = generate_url() + "/{id}/{type}".format(id=character_id, type=type)
+                further_urls.append(url)
     print(further_urls)
     return further_urls
 
-check_for_further_calls_based_on_character_id()
-
-
-def write_to_csv(character_ids, path="data/character_ids.csv"):
-    ids = []
-    for i in range(0, len(test[0]['data']['results'])):
-        ids.append(test[0]['data']['results'][i]['id'])
-
-    print(ids)
-
-    with open(path, "w+", encoding="utf-8", newline="") as output_file:
-
-        csvwriter = csv.writer(output_file, delimiter=",")
-
-        csvwriter.writerow(['Character_ID'])
-
-        csvwriter.writerows(map(lambda x: [x], ids))
-
-    return os.path.relpath(output_file.name)
+# check_for_further_calls_based_on_character_id()
 
 
 def read_test():
