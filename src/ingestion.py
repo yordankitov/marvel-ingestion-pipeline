@@ -55,6 +55,24 @@ def retries_session():
 
     return http
 
+
+def save_checkpoint(offset):
+    with open("checkpoint.txt", "w", encoding="utf-8") as checkpoint:
+        checkpoint.write(str(offset))
+
+
+def read_checkpoint():
+    try:
+        with open("checkpoint.txt", "r", encoding="utf-8") as checkpoint:
+            content = checkpoint.readline()
+            if content:
+                return content
+            else:
+                return 0
+    except:
+        return 0
+
+
 def ingest_characters(limit=100):
     characters = []
     x = 0
@@ -73,10 +91,6 @@ def ingest_characters(limit=100):
     return characters
 
 
-# limit is 100 so it fetches 100 and thats it
-# needs a for loop outside of the ingestion
-# to ingest the wrest, and the counter is outside of the ingestion function
-
 def ingest_comics(limit=100, offset=0):
     comics = []
 
@@ -85,16 +99,18 @@ def ingest_comics(limit=100, offset=0):
 
     try:
         response = http.get(url, params={'orderBy': 'title', 'offset': offset})
+
         print("lenght is: ", len(response.json()['data']['results']))
+
         if not response.json()['data']['results']:
             print('no data anymore')
             return False
+
         comics.append(response.json())
     except:
         print('oopsie')
 
     return comics
-
 
 
 def store_to_csv(data, type):
@@ -108,19 +124,24 @@ def store_to_csv(data, type):
 # char = [simplify_character_data(character) for character in test[0]['data']['results']]
 # store_all_characters(char)
 
-def extract_and_save_comics_data(limit=100, offset=0):
+def extract_and_save_comics_data(limit=100):
     count = 0
+    offset = read_checkpoint()
     while True:
         comics = ingest_comics(limit=limit,offset=offset)
-        # comics_simplified = [simplify_comics_data(x) for x in comics[0]['data']['results']]
-        # store_to_csv(comics_simplified, 'comics')
-        print("request number", count)
-        count += 1
-        offset = offset + limit
+        save_checkpoint(offset)
+
         if not comics:
             break
 
+        comics_simplified = [simplify_comics_data(x) for x in comics[0]['data']['results']]
+        store_to_csv(comics_simplified, 'comics')
+        print("request number", count)
+        count += 1
+        offset = offset + limit
 
+
+extract_and_save_comics_data()
 
 def check_for_further_calls_based_on_character_id(results=None):
     type = ['comics', 'series', 'stories', 'events']
