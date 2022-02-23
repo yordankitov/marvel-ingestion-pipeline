@@ -7,6 +7,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from comics import simplify_comics_data
+from characters import simplify_character_data
 
 BASE_URL = "https://gateway.marvel.com:443/v1/public/{type}?ts={time_stamp}&limit={limit}&apikey={api_key}&hash={hash}"
 
@@ -94,11 +95,11 @@ def ingest_characters(limit=100):
 def ingest_comics(limit=100, offset=0):
     comics = []
 
-    url = generate_url('comics', limit)
+    url = generate_url('characters', limit)
     http = retries_session()
 
     try:
-        response = http.get(url, params={'orderBy': 'title', 'offset': offset})
+        response = http.get(url, params={'orderBy': 'name', 'offset': offset})
 
         print("lenght is: ", len(response.json()['data']['results']))
 
@@ -128,7 +129,7 @@ def extract_and_save_comics_data(limit=100):
     count = 0
     offset = read_checkpoint()
     while True:
-        comics = ingest_comics(limit=limit,offset=offset)
+        comics = ingest_comics(limit=limit, offset=offset)
         save_checkpoint(offset)
 
         if not comics:
@@ -141,7 +142,27 @@ def extract_and_save_comics_data(limit=100):
         offset = offset + limit
 
 
-extract_and_save_comics_data()
+# extract_and_save_comics_data()
+
+def extract_and_save_characters_data(limit=100):
+    count = 0
+    offset = read_checkpoint()
+    while True:
+        characters = ingest_comics(limit=limit, offset=offset)
+        save_checkpoint(offset)
+
+        if not characters:
+            break
+
+        characters_simplified = [simplify_character_data(x) for x in characters[0]['data']['results']]
+        store_to_csv(characters_simplified, 'characters')
+        print("request number", count)
+        count += 1
+        offset = offset + limit
+
+
+extract_and_save_characters_data()
+
 
 def check_for_further_calls_based_on_character_id(results=None):
     type = ['comics', 'series', 'stories', 'events']
