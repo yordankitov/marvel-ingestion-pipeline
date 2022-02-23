@@ -12,10 +12,22 @@ def simplify_comics_data(comics):
                       'issn': comics.get('issn', None),
                       'format': comics.get('format', None),
                       'page_count': comics.get('pageCount'),
-                      'print_price': comics.get('price', None)
+                      'print_price': comics.get('price', None),
+                      'available_series': comics.get('series').get('available'),
+                      'fetched_series': comics.get('series').get('returned'),
+                      'list_of_series': comics.get('series').get('items'),
+                      'available_creators': comics.get('creators').get('available'),
+                      'fetched_creators': comics.get('creators').get('returned'),
+                      'list_of_creators': comics.get('creators').get('items'),
+                      'available_stories': comics.get('stories').get('available'),
+                      'fetched_stories': comics.get('stories').get('returned'),
+                      'list_of_stories': comics.get('stories').get('items'),
+                      'available_events': comics.get('events').get('available'),
+                      'fetched_events': comics.get('events').get('returned'),
+                      'list_of_events': comics.get('events').get('items')
                       }
 
-    print(character_dict)
+
     return character_dict
 
-# comics_id,digital_id,title,variant_description,description,date_modified,isbn,upc,diamond_code,ean,issn,format,page_count,print_price
+# comics_id,digital_id,title,variant_description,description,date_modified,isbn,upc,diamond_code,ean,issn,format,page_count,print_price,available_series,fetched_series,list_of_series,available_creators,fetched_creators,list_of_creators,available_stories,fetched_stories,list_of_stories,available_events,fetched_events,list_of_events
