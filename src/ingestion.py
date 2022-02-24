@@ -170,10 +170,14 @@ def extract_and_save_characters_data(limit=100):
 
 
 def read_test():
-    id = test[0]['data']['results'][0]['id']
 
-    for i in range(0, len(test[0]['data']['results'])):
-        print(test[0]['data']['results'][i]['id'])
+    with open("data/test.txt", "r", encoding="utf-8") as f:
+        data = f.readline()
+
+    http = retries_session()
+    response = http.get(generate_url(type='characters', limit=100))
+    print(response.json())
+
 
     # print(test[0]['data']['results'][0]['comics']['available'] == test[0]['data']['results'][0]['comics']['returned'])
 

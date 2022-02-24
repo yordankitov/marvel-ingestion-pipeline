@@ -1,5 +1,4 @@
 import pandas as pd
-import csv
 import ast
 
 id = 2864
@@ -12,32 +11,16 @@ def read_file(file):
         content = f.readlines()
     return content
 
-
-def check_for_further_calls_based_on_character_id(file):
-    file
-    type = ['comics', 'series', 'stories', 'events']
-    further_urls = []
-    for i in range(0, len(test[0]['data']['results'])):
-        for x in type:
-            result = test[0]['data']['results'][i][x]['available'] == test[0]['data']['results'][i][x]['returned']
-            if not result:
-                character_id = test[0]['data']['results'][i]['id']
-                url = generate_url() + "/{id}/{type}".format(id=character_id, type=type)
-                further_urls.append(url)
-    print(further_urls)
-    return further_urls
-
-
 def extract_names(cell):
     return [d['name'] for d in cell]
 
 
-def create_data(id, list_of_comics):
+def create_data(char_id, list_of_comics):
     comics = []
     for x in list_of_comics:
         comics.append(x)
     # print(data)
-    return {'charcter_id': id, 'comics_name': comics}
+    return {'charcter_id': char_id, 'comics_name': comics}
 
 
 def save_df(data):
@@ -45,20 +28,21 @@ def save_df(data):
     df.to_csv('data/characters_in_comics.csv', mode='a', index=False, header=False)
 
 
+def extract_comics(char_id, comics):
+    comics_list = extract_names(ast.literal_eval(comics))
+    save_df(create_data(char_id, comics_list))
+
+
 def check_returned_comics():
     df = pd.read_csv("data/characters.csv")
-
+    ids = []
     for index, row in df.iterrows():
-        id = row['character_id']
+        char_id = row['character_id']
 
         if int(row['available_comics']) > int(row['fetched_comics']):
-            pass
-            # print(id)
-#             other logic here ...
+            ids.append(char_id)
         else:
-            comics_list = extract_names(ast.literal_eval(row['list_of_comics']))
-            save_df(create_data(id, comics_list))
+            extract_comics(char_id, row['list_of_comics'])
 
-
-check_returned_comics()
-
+    if ids:
+        return ids
