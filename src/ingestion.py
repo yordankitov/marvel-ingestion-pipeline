@@ -161,21 +161,10 @@ def extract_and_save_characters_data(limit=100):
         offset = offset + limit
 
 
-extract_and_save_characters_data()
+# extract_and_save_characters_data()
 
 
-def check_for_further_calls_based_on_character_id(results=None):
-    type = ['comics', 'series', 'stories', 'events']
-    further_urls = []
-    for i in range(0, len(test[0]['data']['results'])):
-        for x in type:
-            result = test[0]['data']['results'][i][x]['available'] == test[0]['data']['results'][i][x]['returned']
-            if not result:
-                character_id = test[0]['data']['results'][i]['id']
-                url = generate_url() + "/{id}/{type}".format(id=character_id, type=type)
-                further_urls.append(url)
-    print(further_urls)
-    return further_urls
+
 
 # check_for_further_calls_based_on_character_id()
 
