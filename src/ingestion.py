@@ -87,8 +87,15 @@ def ingest_comics(limit=100, offset=0):
             return False
 
         comics.append(response.json())
-    except:
-        print('oopsie')
+
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("OOps: Something Else", err)
 
     return comics
 
@@ -168,9 +175,15 @@ def ingest_comics_from_characters(http, char_id, offset, limit):
                     comics_list.append(response.json()['data']['results'])
                 else:
                     break
-    except:
-        print('oopsie')
-    # print(comics_list)
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("OOps: Something Else", err)
+
     return comics_list
 
 
