@@ -1,5 +1,5 @@
 def simplify_comics_data(comics):
-    character_dict = {'comics_id': comics.get('id', None),
+    comics_dict = {'comics_id': comics.get('id', None),
                       'digital_id': comics.get('digitalId', None),
                       'title': comics.get('title', None),
                       'variant_description': comics.get('variantDescription', None),
@@ -27,7 +27,11 @@ def simplify_comics_data(comics):
                       'list_of_events': comics.get('events').get('items')
                       }
 
+    return comics_dict
 
-    return character_dict
+
+def simplify_comics_from_characters(char_id, comics):
+    return {'character_id': char_id,
+            'comics_name': comics.get('title', None)}
 
 # comics_id,digital_id,title,variant_description,description,date_modified,isbn,upc,diamond_code,ean,issn,format,page_count,print_price,available_series,fetched_series,list_of_series,available_creators,fetched_creators,list_of_creators,available_stories,fetched_stories,list_of_stories,available_events,fetched_events,list_of_events
