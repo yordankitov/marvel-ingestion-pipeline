@@ -176,17 +176,15 @@ def ingest_comics_from_characters(http, char_id, offset, limit):
 
 
 def extract_and_save_comics_from_characters(limit=100):
-    count = 0
     ids = ast.literal_eval(read_file("data/characters_ids_for_comics_ingestion.txt"))
     http = retries_session()
-    comics_list = []
     # offset = read_checkpoint()
     offset = 0
     for char_id in ids:
         comics = ingest_comics_from_characters(http=http, char_id=char_id, offset=offset, limit=100)
 
         comics_from_characters_simplified = [simplify_comics_from_characters(char_id, x) for x in comics[0]]
-        store_to_csv(comics_from_characters_simplified, 'characters_in_comics_fetched')
+        store_to_csv(comics_from_characters_simplified, 'characters_in_comics')
 
 
 # test
