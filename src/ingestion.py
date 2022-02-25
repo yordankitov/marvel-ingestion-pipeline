@@ -150,28 +150,24 @@ def read_test():
 
     # print(test[0]['data']['results'][0]['comics']['available'] == test[0]['data']['results'][0]['comics']['returned'])
 
-# ingest comics from character
-# offset for checkpoints
-# ordered by title
-# ran through extraction function to be saved (generalise the function there)
 
 def ingest_comics_from_characters(http, char_id, offset, limit):
     comics_list = []
     try:
         response = http.get(generate_url("characters/{id}/comics".format(id=char_id), limit=100), params={'orderBy': 'title', 'offset': offset})
-
-        print("lenght is: ", len(response.json()['data']['results']))
         comics_list.append(response.json()['data']['results'])
-        offset = offset + limit
-        while True:
-            response = http.get(generate_url("characters/{id}/comics".format(id=char_id), limit=100),
-                                params={'orderBy': 'title', 'offset': offset})
-            print("lenght is: ", len(response.json()['data']['results']))
-            if response.json()['data']['results']:
-                offset = offset + limit
-                comics_list.append(response.json()['data']['results'])
-            else:
-                break
+
+        if response.json()['data']['count'] > limit:
+            offset = offset + limit
+            while True:
+                response = http.get(generate_url("characters/{id}/comics".format(id=char_id), limit=100),
+                                    params={'orderBy': 'title', 'offset': offset})
+
+                if response.json()['data']['results']:
+                    offset = offset + limit
+                    comics_list.append(response.json()['data']['results'])
+                else:
+                    break
     except:
         print('oopsie')
     # print(comics_list)
