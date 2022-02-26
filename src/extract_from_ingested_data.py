@@ -30,7 +30,7 @@ def create_dataframe_data(char_id: str, list_of_comics: list) -> dict:
     for x in list_of_comics:
         comics.append(x)
 
-    return {'character_id': char_id, 'comics_name': comics}
+    return {'creator_id': char_id, 'comics_name': comics}
 
 
 def save_dataframe(data: dict):
@@ -40,7 +40,7 @@ def save_dataframe(data: dict):
     :param data: data in the form of a dataframe
     """
     df = pd.DataFrame(data)
-    df.to_csv('data/characters_in_events.csv', mode='a', index=False, header=False)
+    df.to_csv('data/creators_in_comics.csv', mode='a', index=False, header=False)
 
 
 def extract_comics(char_id: str, comics: list):
@@ -98,5 +98,26 @@ def check_returned_data_for_events():
         save_file(data=ids, file_path="data/characters_ids_for_events_ingestion.txt")
 
 
-
 # generalise the functions here ############
+
+
+def check_returned_data_for_comics():
+    df = pd.read_csv("data/creators.csv")
+    ids = []
+    for index, row in df.iterrows():
+        creator_id = row['creator_id']
+
+        if int(row['available_comics']) > int(row['fetched_comics']):
+            ids.append(creator_id)
+        else:
+            extract_comics_from_creators(creator_id, row['list_of_comics'])
+
+    if ids:
+        save_file(data=ids, file_path="data/creator_ids_for_comics_ingestion.txt")
+
+
+def extract_comics_from_creators(creator_id, comics):
+    comics_list = extract_names(ast.literal_eval(comics))
+    save_dataframe(create_dataframe_data(creator_id, comics_list))
+
+check_returned_data_for_comics()
