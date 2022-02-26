@@ -8,6 +8,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from comics import simplify_comics_data, simplify_comics_from_characters
+from events import simplify_events_from_characters
 from characters import simplify_character_data
 from helpers import read_file
 
@@ -204,3 +205,44 @@ def extract_and_save_comics_from_characters(limit=100):
 # comics_from_characters_simplified = [simplify_comics_from_characters('1009150', x) for x in l[0][0]['results']]
 # for x in l[0]:
 #     print(x.get('title'))
+
+def ingest_events_from_characters(http, char_id, offset, limit):
+    events_list = []
+    try:
+        response = http.get(generate_url("characters/{id}/events".format(id=char_id), limit=100), params={'orderBy': 'name', 'offset': offset})
+        events_list.append(response.json()['data']['results'])
+        print(char_id, 'first call has ', len(response.json()['data']['results']))
+        if response.json()['data']['count'] > limit:
+            offset = offset + limit
+            while True:
+                response = http.get(generate_url("characters/{id}/events".format(id=char_id), limit=100),
+                                    params={'orderBy': 'name', 'offset': offset})
+                print(char_id, 'second call has ', len(response.json()['data']['results']))
+                if response.json()['data']['results']:
+                    offset = offset + limit
+                    events_list.append(response.json()['data']['results'])
+                else:
+                    break
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("OOps: Something Else", err)
+
+    return events_list
+
+
+def extract_and_save_events_from_characters(limit=100):
+    ids = ast.literal_eval(read_file("data/characters_ids_for_events_ingestion.txt"))
+    http = retries_session()
+    # offset = read_checkpoint()
+    offset = 0
+    for char_id in ids:
+        comics = ingest_events_from_characters(http=http, char_id=char_id, offset=offset, limit=100)
+
+        events_from_characters_simplified = [simplify_events_from_characters(char_id, x) for x in comics[0]]
+        store_to_csv(events_from_characters_simplified, 'characters_in_events_fetched')
+

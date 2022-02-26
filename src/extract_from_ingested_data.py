@@ -40,7 +40,7 @@ def save_dataframe(data: dict):
     :param data: data in the form of a dataframe
     """
     df = pd.DataFrame(data)
-    df.to_csv('data/characters_in_comics.csv', mode='a', index=False, header=False)
+    df.to_csv('data/characters_in_events.csv', mode='a', index=False, header=False)
 
 
 def extract_comics(char_id: str, comics: list):
@@ -76,3 +76,27 @@ def check_returned_data():
 
     if ids:
         save_file(data=ids, file_path="data/characters_ids_for_comics_ingestion.txt")
+
+
+def extract_events(char_id, events):
+    events_list = extract_names(ast.literal_eval(events))
+    save_dataframe(create_dataframe_data(char_id, events_list))
+
+
+def check_returned_data_for_events():
+    df = pd.read_csv("data/characters.csv")
+    ids = []
+    for index, row in df.iterrows():
+        char_id = row['character_id']
+
+        if int(row['available_events']) > int(row['fetched_events']):
+            ids.append(char_id)
+        else:
+            extract_events(char_id, row['list_of_events'])
+
+    if ids:
+        save_file(data=ids, file_path="data/characters_ids_for_events_ingestion.txt")
+
+
+
+# generalise the functions here ############
