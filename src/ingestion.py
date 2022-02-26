@@ -10,6 +10,7 @@ from requests.packages.urllib3.util.retry import Retry
 from comics import simplify_comics_data, simplify_comics_from_characters
 from events import simplify_events_data, simplify_events_from_characters
 from characters import simplify_character_data
+from creators import simplify_creators_data
 from helpers import read_file
 
 BASE_URL = "https://gateway.marvel.com:443/v1/public/{type}?ts={time_stamp}&limit={limit}&apikey={api_key}&hash={hash}"
@@ -293,4 +294,50 @@ def extract_and_save_events_data(limit=100, offset=0):
         offset = offset + limit
 
 
+# creators
+
+
+def ingest_creators(limit=100, offset=0):
+    creators = []
+
+    url = generate_url('creators', limit)
+    http = retries_session()
+
+    try:
+        response = http.get(url, params={'orderBy': 'lastName', 'offset': offset})
+
+        print("length is: ", len(response.json()['data']['results']))
+
+        if not response.json()['data']['results']:
+            print('no data anymore')
+            return False
+
+        creators.append(response.json())
+
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("OOps: Something Else", err)
+
+    return creators
+
+
+def extract_and_save_creators_data(limit=100, offset=0):
+    count = 0
+    # offset = read_checkpoint()
+    while True:
+        creators = ingest_creators(limit=limit, offset=offset)
+        # save_checkpoint(offset)
+        if not creators:
+            break
+
+        creators_simplified = [simplify_creators_data(x) for x in creators[0]['data']['results']]
+        store_to_csv(creators_simplified, 'creators')
+        print("request number", count)
+        count += 1
+        offset = offset + limit
 
