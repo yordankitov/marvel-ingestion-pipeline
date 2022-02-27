@@ -120,4 +120,4 @@ def extract_comics_from_creators(creator_id, comics):
     comics_list = extract_names(ast.literal_eval(comics))
     save_dataframe(create_dataframe_data(creator_id, comics_list))
 
-check_returned_data_for_comics()
+# check_returned_data_for_comics()

@@ -34,4 +34,9 @@ def simplify_comics_from_characters(char_id, comics):
     return {'character_id': char_id,
             'comics_name': comics.get('title', None)}
 
+
+def simplify_comics_from_creators(creator_id, comics):
+    return {'creator_id': creator_id,
+            'comics_name': comics.get('title', None)}
+
 # comics_id,digital_id,title,variant_description,description,date_modified,isbn,upc,diamond_code,ean,issn,format,page_count,print_price,available_series,fetched_series,list_of_series,available_creators,fetched_creators,list_of_creators,available_stories,fetched_stories,list_of_stories,available_events,fetched_events,list_of_events

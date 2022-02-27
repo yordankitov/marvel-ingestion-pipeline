@@ -66,6 +66,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/src/data/creators_in_comics_fetched.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/src/data/event.csv">
           <value>
             <Attribute>

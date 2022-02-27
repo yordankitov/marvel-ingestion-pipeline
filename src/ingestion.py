@@ -7,7 +7,7 @@ from datetime import datetime
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from comics import simplify_comics_data, simplify_comics_from_characters
+from comics import simplify_comics_data, simplify_comics_from_characters, simplify_comics_from_creators
 from events import simplify_events_data, simplify_events_from_characters
 from characters import simplify_character_data
 from creators import simplify_creators_data
@@ -341,3 +341,49 @@ def extract_and_save_creators_data(limit=100, offset=0):
         count += 1
         offset = offset + limit
 
+
+
+def ingest_comics_from_creators(http, creator_id, offset, limit):
+    comics_list = []
+    try:
+        response = http.get(generate_url("creators/{id}/comics".format(id=creator_id), limit=100), params={'orderBy': 'title', 'offset': offset})
+        comics_list.append(response.json()['data']['results'])
+        print(creator_id, 'first call has ', len(response.json()['data']['results']))
+        if response.json()['data']['total'] > limit:
+            offset = offset + limit
+            while True:
+                response = http.get(generate_url("creators/{id}/comics".format(id=creator_id), limit=100),
+                                    params={'orderBy': 'title', 'offset': offset})
+                print(creator_id, 'second call has ', len(response.json()['data']['results']))
+                if response.json()['data']['results']:
+                    offset = offset + limit
+                    comics_list.append(response.json()['data']['results'])
+                else:
+                    break
+    except requests.exceptions.HTTPError as errh:
+        print("Http Error:", errh)
+    except requests.exceptions.ConnectionError as errc:
+        print("Error Connecting:", errc)
+    except requests.exceptions.Timeout as errt:
+        print("Timeout Error:", errt)
+    except requests.exceptions.RequestException as err:
+        print("OOps: Something Else", err)
+
+    return comics_list
+
+
+def extract_and_save_comics_from_creators(limit=100):
+    ids = ast.literal_eval(read_file("data/creator_ids_for_comics_ingestion.txt"))
+
+    http = retries_session()
+    # offset = read_checkpoint()
+    offset = 0
+    for creator_id in ids:
+        comics = ingest_comics_from_creators(http=http, creator_id=creator_id, offset=offset, limit=100)
+
+        comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, x) for x in comics[0]]
+        print(comics_from_creators_simplified)
+        store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
+        save_checkpoint(creator_id)
+
+extract_and_save_comics_from_creators()
