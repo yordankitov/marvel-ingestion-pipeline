@@ -97,21 +97,26 @@ def ingest_comics(limit=100, offset=0):
     except requests.exceptions.Timeout as errt:
         print("Timeout Error:", errt)
     except requests.exceptions.RequestException as err:
-        print("OOps: Something Else", err)
+        print("Oops: Something Else", err)
 
     return comics
 
 
-def store_to_csv(data, type):
-    headers = data[0].keys()
-    with open('data/{type}.csv'.format(type=type), 'a', encoding='utf8', newline='') as output_file:
-        fc = csv.DictWriter(output_file, fieldnames=headers)
-        # fc.writeheader()
-        fc.writerows(data)
+def store_to_csv(data, entity_type):
+    try:
+        headers = data[0].keys()
+    except Exception as e:
+        print("ERROR ENCOUNTERED WHILE EXTRACTING THE HEADERS: ")
+        print(e)
+    try:
+        with open('data/{type}.csv'.format(type=entity_type), 'a', encoding='utf8', newline='') as output_file:
+            fc = csv.DictWriter(output_file, fieldnames=headers)
+            # fc.writeheader()
+            fc.writerows(data)
+    except Exception as e:
+        print("ERROR ENCOUNTERED WHILE TRYING TO SAVE YOUR DATA: ")
+        print(e)
 
-
-# char = [simplify_character_data(character) for character in test[0]['data']['results']]
-# store_all_characters(char)
 
 def extract_and_save_comics_data(limit=100):
     count = 0
