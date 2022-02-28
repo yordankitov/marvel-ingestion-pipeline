@@ -1,64 +1,12 @@
 import csv
-import os
 import requests
-import hashlib
 import ast
-from datetime import datetime
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
 from comics import simplify_comics_data, simplify_comics_from_characters, simplify_comics_from_creators
 from events import simplify_events_data, simplify_events_from_characters
 from characters import simplify_character_data
 from creators import simplify_creators_data
-from helpers import read_file
-
-BASE_URL = "https://gateway.marvel.com:443/v1/public/{type}?ts={time_stamp}&limit={limit}&apikey={api_key}&hash={hash}"
-
-
-def generate_url(type, limit):
-    ts = datetime.now()
-    ts = str(ts).replace(' ', '_')
-    return BASE_URL.format(type=type, time_stamp=ts, limit=limit, api_key=os.environ['API_KEY'],
-                           hash=create_hash_for_login(ts))
-
-
-def create_hash_for_login(ts):
-    keys = str(os.environ['PRIVATE_KEY'] + os.environ['API_KEY'])
-    hashed = hashlib.md5(str(ts).encode() + keys.encode())
-
-    return hashed.hexdigest()
-
-
-def retries_session():
-    retry_strategy = Retry(
-        total=5,
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["HEAD", "GET", "OPTIONS"],
-    )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    http = requests.Session()
-    http.mount("https://", adapter)
-    http.mount("http://", adapter)
-
-    return http
-
-
-def save_checkpoint(offset):
-    with open("checkpoint.txt", "w", encoding="utf-8") as checkpoint:
-        checkpoint.write(str(offset))
-
-
-def read_checkpoint():
-    try:
-        with open("checkpoint.txt", "r", encoding="utf-8") as checkpoint:
-            content = checkpoint.readline()
-            if content:
-                return content
-            else:
-                return 0
-    except:
-        return 0
+from helpers import generate_url, retries_session, read_file, save_checkpoint, read_checkpoint, store_to_csv
 
 
 def ingest_characters(limit=100):
@@ -102,22 +50,6 @@ def ingest_comics(limit=100, offset=0):
     return comics
 
 
-def store_to_csv(data, entity_type):
-    try:
-        headers = data[0].keys()
-    except Exception as e:
-        print("ERROR ENCOUNTERED WHILE EXTRACTING THE HEADERS: ")
-        print(e)
-    try:
-        with open('data/{type}.csv'.format(type=entity_type), 'a', encoding='utf8', newline='') as output_file:
-            fc = csv.DictWriter(output_file, fieldnames=headers)
-            # fc.writeheader()
-            fc.writerows(data)
-    except Exception as e:
-        print("ERROR ENCOUNTERED WHILE TRYING TO SAVE YOUR DATA: ")
-        print(e)
-
-
 def extract_and_save_comics_data(limit=100):
     count = 0
     offset = read_checkpoint()
@@ -150,19 +82,6 @@ def extract_and_save_characters_data(limit=100):
         print("request number", count)
         count += 1
         offset = offset + limit
-
-
-def read_test():
-
-    with open("data/test.txt", "r", encoding="utf-8") as f:
-        data = f.readline()
-
-    http = retries_session()
-    response = http.get(generate_url(type='characters', limit=100))
-    print(response.json())
-
-
-    # print(test[0]['data']['results'][0]['comics']['available'] == test[0]['data']['results'][0]['comics']['returned'])
 
 
 def ingest_comics_from_characters(http, char_id, offset, limit):
@@ -307,12 +226,19 @@ def ingest_creators(limit=100, offset=0):
 
     url = generate_url('creators', limit)
     http = retries_session()
+    modified = "2016-01-04T18:09:26-0600"
+    # modified = None
+    if modified:
+        modified_since = modified
+    else:
+        modified_since = None
 
     try:
-        response = http.get(url, params={'orderBy': 'lastName', 'offset': offset})
+        response = http.get(url, params={'orderBy': 'modified', 'offset': offset, 'modifiedSince': modified_since})
 
         print("length is: ", len(response.json()['data']['results']))
-
+        print(response.json()['data']['results'][0])
+        print("total is ", response.json()['data']['count'])
         if not response.json()['data']['results']:
             print('no data anymore')
             return False
@@ -329,6 +255,9 @@ def ingest_creators(limit=100, offset=0):
         print("OOps: Something Else", err)
 
     return creators
+
+
+ingest_creators()
 
 
 def extract_and_save_creators_data(limit=100, offset=0):
@@ -379,11 +308,13 @@ def ingest_comics_from_creators(http, creator_id, offset, limit):
 
 def extract_and_save_comics_from_creators(limit=100):
     ids = ast.literal_eval(read_file("data/creator_ids_for_comics_ingestion.txt"))
-
     http = retries_session()
     # offset = read_checkpoint()
     offset = 0
-    for creator_id in ids:
+    start_index = ids.index(2053)
+    # print(range("2053"))
+    for creator_id in ids[start_index:]:
+        # print(creator_id)
         comics = ingest_comics_from_creators(http=http, creator_id=creator_id, offset=offset, limit=100)
 
         comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, x) for x in comics[0]]
@@ -391,4 +322,4 @@ def extract_and_save_comics_from_creators(limit=100):
         store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
         save_checkpoint(creator_id)
 
-extract_and_save_comics_from_creators()
+# extract_and_save_comics_from_creators()
