@@ -9,6 +9,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 BASE_URL = "https://gateway.marvel.com:443/v1/public/{type}?ts={time_stamp}&limit={limit}&apikey={api_key}&hash={hash}"
 
+
 def save_file(data, file_path):
     with open(file_path, "w", encoding="utf-8") as output_file:
         output_file.write(str(data))
@@ -62,6 +63,7 @@ def check_entity_last_update(entity):
 
 # for x in ['characters', 'creators', 'comics', 'events']:
 #     print(x, check_entity_last_update(x))
+
 
 def generate_url(type, limit):
     ts = datetime.now()

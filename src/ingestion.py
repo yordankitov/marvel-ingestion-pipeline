@@ -1,4 +1,3 @@
-import csv
 import requests
 import ast
 
@@ -9,79 +8,75 @@ from creators import simplify_creators_data
 from helpers import generate_url, retries_session, read_file, save_checkpoint, read_checkpoint, store_to_csv
 
 
-def ingest_characters(limit=100):
-    # generalise to ingest entity
-    characters = []
-    x = 0
-    url = generate_url('comics')
-
-    response = requests.get(url, params={'orderBy': 'title', 'offset': x})
-    print(response.json())
-
-    return characters
-
-
-def ingest_comics(limit=100, offset=0):
-    comics = []
-
-    url = generate_url('characters', limit)
-    http = retries_session()
-
-    try:
-        response = http.get(url, params={'orderBy': 'name', 'offset': offset})
-
-        print("length is: ", len(response.json()['data']['results']))
-
-        if not response.json()['data']['results']:
-            print('no data anymore')
-            return False
-
-        comics.append(response.json())
-
-    except requests.exceptions.HTTPError as errh:
-        print("Http Error:", errh)
-    except requests.exceptions.ConnectionError as errc:
-        print("Error Connecting:", errc)
-    except requests.exceptions.Timeout as errt:
-        print("Timeout Error:", errt)
-    except requests.exceptions.RequestException as err:
-        print("Oops: Something Else", err)
-
-    return comics
+# def ingest_characters(limit=100):
+#     # generalise to ingest entity
+#     characters = []
+#     x = 0
+#     url = generate_url('comics')
+#
+#     response = requests.get(url, params={'orderBy': 'title', 'offset': x})
+#     print(response.json())
+#
+#     return characters
 
 
-def extract_and_save_comics_data(limit=100):
+# def ingest_comics(limit=100, offset=0):
+#     comics = []
+#
+#     url = generate_url('characters', limit)
+#     http = retries_session()
+#
+#     try:
+#         response = http.get(url, params={'orderBy': 'name', 'offset': offset})
+#
+#         print("length is: ", len(response.json()['data']['results']))
+#
+#         if not response.json()['data']['results']:
+#             print('no data anymore')
+#             return False
+#
+#         comics.append(response.json())
+#
+#     except requests.exceptions.HTTPError as errh:
+#         print("Http Error:", errh)
+#     except requests.exceptions.ConnectionError as errc:
+#         print("Error Connecting:", errc)
+#     except requests.exceptions.Timeout as errt:
+#         print("Timeout Error:", errt)
+#     except requests.exceptions.RequestException as err:
+#         print("Oops: Something Else", err)
+#
+#     return comics
+
+
+def extract_and_save_comics_data(limit, offset, order_by, modified=None):
     count = 0
-    offset = read_checkpoint()
+    # offset = read_checkpoint()
     while True:
-        comics = ingest_comics(limit=limit, offset=offset)
-        save_checkpoint(offset)
+        comics, another_request = ingest_entity(limit=limit, offset=offset, entity='comics', order_by=order_by, modified=modified)
 
-        if not comics:
-            break
-
-        comics_simplified = [simplify_comics_data(x) for x in comics[0]['data']['results']]
-        store_to_csv(comics_simplified, 'comics')
+        # comics_simplified = [simplify_comics_data(x) for x in comics[0]['data']['results']]
+        # store_to_csv(comics_simplified, 'comics')
         print("request number", count)
         count += 1
         offset = offset + limit
-
-
-def extract_and_save_characters_data(limit=100):
-    count = 0
-    offset = read_checkpoint()
-    while True:
-        characters = ingest_comics(limit=limit, offset=offset)
-        save_checkpoint(offset)
-
-        if not characters:
+        if not another_request:
             break
 
-        characters_simplified = [simplify_character_data(x) for x in characters[0]['data']['results']]
-        store_to_csv(characters_simplified, 'characters')
+
+def extract_and_save_characters_data(limit, offset, order_by, modified=None):
+    count = 0
+    # offset = read_checkpoint()
+    while True:
+        characters, another_request = ingest_entity(limit=limit, offset=offset, entity='characters', order_by=order_by, modified=modified)
+
+        # characters_simplified = [simplify_character_data(x) for x in characters[0]['data']['results']]
+        # store_to_csv(characters_simplified, 'characters')
         print("request number", count)
         count += 1
         offset = offset + limit
+        if not another_request:
+            break
 
 
 def ingest_comics_from_characters(http, char_id, offset, limit):
@@ -170,80 +165,74 @@ def extract_and_save_events_from_characters(limit=100):
         events_from_characters_simplified = [simplify_events_from_characters(char_id, x) for x in comics[0]]
         store_to_csv(events_from_characters_simplified, 'characters_in_events_fetched')
 
-## events
 
-def ingest_events(limit=100, offset=0):
-    events = []
+# def ingest_events(limit=100, offset=0):
+#     events = []
+#
+#     url = generate_url('events', limit)
+#     http = retries_session()
+#
+#     try:
+#         response = http.get(url, params={'orderBy': 'name', 'offset': offset})
+#
+#         print("length is: ", len(response.json()['data']['results']))
+#
+#         if not response.json()['data']['results']:
+#             print('no data anymore')
+#             return False
+#
+#         events.append(response.json())
+#
+#     except requests.exceptions.HTTPError as errh:
+#         print("Http Error:", errh)
+#     except requests.exceptions.ConnectionError as errc:
+#         print("Error Connecting:", errc)
+#     except requests.exceptions.Timeout as errt:
+#         print("Timeout Error:", errt)
+#     except requests.exceptions.RequestException as err:
+#         print("OOps: Something Else", err)
+#
+#     return events
 
-    url = generate_url('events', limit)
-    http = retries_session()
 
-    try:
-        response = http.get(url, params={'orderBy': 'name', 'offset': offset})
-
-        print("length is: ", len(response.json()['data']['results']))
-
-        if not response.json()['data']['results']:
-            print('no data anymore')
-            return False
-
-        events.append(response.json())
-
-    except requests.exceptions.HTTPError as errh:
-        print("Http Error:", errh)
-    except requests.exceptions.ConnectionError as errc:
-        print("Error Connecting:", errc)
-    except requests.exceptions.Timeout as errt:
-        print("Timeout Error:", errt)
-    except requests.exceptions.RequestException as err:
-        print("OOps: Something Else", err)
-
-    return events
-
-
-def extract_and_save_events_data(limit=100, offset=0):
+def extract_and_save_events_data(limit, offset, order_by, modified=None):
     count = 0
     # offset = read_checkpoint()
     while True:
-        events = ingest_events(limit=limit, offset=offset)
-        # save_checkpoint(offset)
-        print(events)
-        if not events:
-            break
+        events, another_request = ingest_entity(limit=limit, offset=offset, entity='events', order_by=order_by, modified=modified)
 
-        events_simplified = [simplify_events_data(x) for x in events[0]['data']['results']]
-        store_to_csv(events_simplified, 'events')
+        # events_simplified = [simplify_events_data(x) for x in events[0]['data']['results']]
+        # store_to_csv(events_simplified, 'events')
         print("request number", count)
         count += 1
         offset = offset + limit
+        if not another_request:
+            break
 
+def ingest_entity(limit, offset, entity, order_by, modified):
 
-# creators
-
-
-def ingest_creators(limit=100, offset=0):
-    creators = []
-
-    url = generate_url('creators', limit)
+    url = generate_url(entity, limit)
     http = retries_session()
-    modified = "2016-01-04T18:09:26-0600"
-    # modified = None
+    another_request = None
+
     if modified:
         modified_since = modified
     else:
         modified_since = None
 
     try:
-        response = http.get(url, params={'orderBy': 'modified', 'offset': offset, 'modifiedSince': modified_since})
+        response = http.get(url, params={'orderBy': order_by, 'offset': offset, 'modifiedSince': modified_since})
 
         print("length is: ", len(response.json()['data']['results']))
-        print(response.json()['data']['results'][0])
-        print("total is ", response.json()['data']['count'])
-        if not response.json()['data']['results']:
-            print('no data anymore')
-            return False
 
-        creators.append(response.json())
+        print("total is ", response.json()['data']['count'])
+
+        total_values = response.json()['data']['offset'] + response.json()['data']['count']
+        if response.json()['data']['total'] == total_values:
+            print('no data anymore')
+            another_request = False
+        else:
+            another_request = True
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
@@ -254,28 +243,26 @@ def ingest_creators(limit=100, offset=0):
     except requests.exceptions.RequestException as err:
         print("OOps: Something Else", err)
 
-    return creators
+    return response.json(), another_request
 
 
-ingest_creators()
-
-
-def extract_and_save_creators_data(limit=100, offset=0):
+def extract_and_save_creators_data(limit, offset, order_by, modified=None):
     count = 0
     # offset = read_checkpoint()
     while True:
-        creators = ingest_creators(limit=limit, offset=offset)
-        # save_checkpoint(offset)
-        if not creators:
-            break
+        creators, another_request = ingest_entity(limit=limit, offset=offset, entity='creators', order_by=order_by, modified=modified)
 
-        creators_simplified = [simplify_creators_data(x) for x in creators[0]['data']['results']]
-        store_to_csv(creators_simplified, 'creators')
+        # creators_simplified = [simplify_creators_data(x) for x in creators['data']['results']]
+        # store_to_csv(creators_simplified, 'creators')
         print("request number", count)
         count += 1
         offset = offset + limit
 
+        if not another_request:
+            break
 
+
+extract_and_save_creators_data(limit=100, offset=0, order_by='modified')
 
 def ingest_comics_from_creators(http, creator_id, offset, limit):
     comics_list = []
