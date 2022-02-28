@@ -138,16 +138,17 @@ def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
     return events_list
 
 
-def extract_and_save_events_from_characters(limit=100):
+def extract_and_save_events_from_characters(limit):
     ids = ast.literal_eval(read_file("data/characters_ids_for_events_ingestion.txt"))
     http = retries_session()
-    # offset = read_checkpoint()
-    offset = 0
-    for char_id in ids:
-        comics = ingest_events_from_characters(http=http, char_id=char_id, offset=offset, limit=100)
+    checkpoint = read_checkpoint("../checkpoints/character_id_for_ingesting_events.txt")
+    start_index = ids.index(checkpoint)
+    for char_id in ids[start_index:]:
+        comics = ingest_events_from_characters(http=http, char_id=char_id, offset=0, limit=limit)
 
         events_from_characters_simplified = [simplify_events_from_characters(char_id, x) for x in comics[0]]
         store_to_csv(events_from_characters_simplified, 'characters_in_events_fetched')
+        save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_events.txt")
 
 
 def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=None):
@@ -186,27 +187,23 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
 def extract_and_save_comics_from_characters(limit):
     ids = ast.literal_eval(read_file("data/characters_ids_for_comics_ingestion.txt"))
     http = retries_session()
-    # offset = read_checkpoint()
-    offset = 0
-    # for char_id in ids[:2]:
-    comics = ingest_comics_from_entity(http=http, entity_id=1009212, offset=offset, limit=limit, entity='characters')
-
-    comics_from_characters_simplified = [simplify_comics_from_characters(1009212, x) for x in comics[0]]
-    # store_to_csv(comics_from_characters_simplified, 'characters_in_comics')
-    print(comics_from_characters_simplified)
+    checkpoint = read_checkpoint("../checkpoints/creator_id_for_ingesting_comics.txt")
+    start_index = ids.index(checkpoint)
+    for char_id in ids[start_index:]:
+        comics = ingest_comics_from_entity(http=http, entity_id=char_id, offset=0, limit=limit, entity='characters')
+        comics_from_characters_simplified = [simplify_comics_from_characters(char_id, x) for x in comics[0]]
+        store_to_csv(comics_from_characters_simplified, 'characters_in_comics')
+        save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_comics.txt")
 
 
 def extract_and_save_comics_from_creators(limit):
     ids = ast.literal_eval(read_file("data/creator_ids_for_comics_ingestion.txt"))
     http = retries_session()
-    # offset = read_checkpoint()
-    offset = 0
-    start_index = ids.index(2053)
+    checkpoint = read_checkpoint("../checkpoints/creator_id_for_ingesting_comics.txt")
+    start_index = ids.index(checkpoint)
     for creator_id in ids[start_index:]:
-        # print(creator_id)
-        comics = ingest_comics_from_entity(http=http, entity_id=2053, offset=offset, limit=limit, entity='creators')
-
-        comics_from_creators_simplified = [simplify_comics_from_creators(2053, x) for x in comics[0]]
-        # store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
-        save_checkpoint(creator_id)
+        comics = ingest_comics_from_entity(http=http, entity_id=2053, offset=0, limit=limit, entity='creators')
+        comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, x) for x in comics[0]]
+        store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
+        save_checkpoint(creator_id, "../checkpoints/creator_id_for_ingesting_comics.txt")
 

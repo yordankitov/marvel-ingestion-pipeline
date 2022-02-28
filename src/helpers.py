@@ -21,10 +21,12 @@ def read_file(file_path):
     return content
 
 
-def save_checkpoint(offset):
-    with open("checkpoint.txt", "w", encoding="utf-8") as checkpoint:
-        checkpoint.write(str(offset))
-
+def save_checkpoint(offset, file_path):
+    try:
+        with open(file_path, "w", encoding="utf-8") as checkpoint:
+            checkpoint.write(str(offset))
+    except Exception as e:
+        print(e)
 
 def store_to_csv(data, entity_type):
     try:
@@ -42,9 +44,9 @@ def store_to_csv(data, entity_type):
         print(e)
 
 
-def read_checkpoint():
+def read_checkpoint(file_path):
     try:
-        with open("checkpoint.txt", "r", encoding="utf-8") as checkpoint:
+        with open(file_path, "r", encoding="utf-8") as checkpoint:
             content = checkpoint.readline()
             if content:
                 return content

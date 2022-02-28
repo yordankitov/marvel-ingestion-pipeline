@@ -155,6 +155,7 @@ src/*.json
 src/*.txt
 src/data/
 src/test.py
+checkpoints/
 *.json
 # PyCharm
 #  JetBrains specific template is maintainted in a separate JetBrains.gitignore that can
