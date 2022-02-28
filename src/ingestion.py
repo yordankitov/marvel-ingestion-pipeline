@@ -106,23 +106,26 @@ def extract_and_save_creators_data(limit, offset, order_by, modified=None):
             break
 
 
-def ingest_events_from_characters(http, char_id, offset, limit):
+def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
     events_list = []
+
+    if modified:
+        modified_since = modified
+    else:
+        modified_since = None
+
     try:
-        response = http.get(generate_url("characters/{id}/events".format(id=char_id), limit=100), params={'orderBy': 'name', 'offset': offset})
-        events_list.append(response.json()['data']['results'])
-        print(char_id, 'first call has ', len(response.json()['data']['results']))
-        if response.json()['data']['count'] > limit:
-            offset = offset + limit
-            while True:
-                response = http.get(generate_url("characters/{id}/events".format(id=char_id), limit=100),
-                                    params={'orderBy': 'name', 'offset': offset})
-                print(char_id, 'second call has ', len(response.json()['data']['results']))
-                if response.json()['data']['results']:
-                    offset = offset + limit
-                    events_list.append(response.json()['data']['results'])
-                else:
-                    break
+        while True:
+            response = http.get(generate_url("characters/{id}/events".format(id=char_id), limit=100), params={'orderBy': 'modified', 'offset': offset, 'modifiedSince': modified_since})
+            events_list.append(response.json()['data']['results'])
+            print(char_id, 'first call has ', len(response.json()['data']['results']))
+
+            total_values = response.json()['data']['offset'] + response.json()['data']['count']
+            if response.json()['data']['total'] > total_values:
+                offset = offset + limit
+            else:
+                break
+
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
     except requests.exceptions.ConnectionError as errc:
