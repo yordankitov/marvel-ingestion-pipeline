@@ -8,6 +8,7 @@ authors = ["yordankitov <yordankitov@infinitelambda.com>"]
 python = "^3.9"
 requests = "^2.27.1"
 pandas = "^1.4.1"
+boto3 = "^1.21.9"
 
 [tool.poetry.dev-dependencies]
 
