@@ -28,91 +28,54 @@ def create_dataframe_data(char_id: str, list_of_comics: list) -> dict:
     return {'creator_id': char_id, 'comics_name': comics}
 
 
-def save_dataframe(data: dict):
+def save_dataframe(file_path: str, data: dict):
     """
     Receives pandas df which saves to a csv
 
     :param data: data in the form of a dataframe
+    :param file_path: the directory and name of the file where the csv to be saved
     """
     df = pd.DataFrame(data)
-    df.to_csv('data/creators_in_comics.csv', mode='a', index=False, header=False)
+    df.to_csv(file_path, mode='a', index=False, header=False)
 
 
-def extract_comics(char_id: str, comics: list):
-    """
-    Receives a character id and a list of comics.
-    A pandas df is created with that data and then
-    saved to a csv file.
-
-    :param char_id: character id
-    :param comics: list of comics
-
-    """
-    comics_list = extract_names(ast.literal_eval(comics))
-    save_dataframe(create_dataframe_data(char_id, comics_list))
-
-
-def check_returned_data():
+def check_returned_data_entity(entity: str, looking_for: str):
     """
     Checks if the specified amount of data fetched for the entity is exhausted,
-    if it's not, it will save the id of the character that will need
-    further data ingestion
+    if it's not, it will save the id of the main entity that will need
+    further data ingestion,
+    or it will pass the entity id and their respective list of sub entities to
+    extract_sub_entity_from_entity function.
+
+    :param entity: main entity name (character, creator). NOTE: must be in singular form
+    :param looking_for: sub entity name (comics, events, etc.) NOTE: must be in plural form
 
     """
-    df = pd.read_csv("data/characters.csv")
+    df = pd.read_csv(f"data/{entity}s.csv")
     ids = []
     for index, row in df.iterrows():
-        char_id = row['character_id']
+        entity_id = row[f'{entity}_id']
 
-        if int(row['available_comics']) > int(row['fetched_comics']):
-            ids.append(char_id)
+        if int(row[f'available_{looking_for}']) > int(row[f'fetched_{looking_for}']):
+            ids.append(entity_id)
         else:
-            extract_comics(char_id, row['list_of_comics'])
+            extract_sub_entity_from_entity(entity_id, row[f"list_of_{looking_for}"], looking_for, entity)
 
     if ids:
-        save_file(data=ids, file_path="data/characters_ids_for_comics_ingestion.txt")
+        save_file(data=ids, file_path=f"data/{entity}s_ids_for_{looking_for}_ingestion-test.txt")
 
 
-def extract_events(char_id, events):
-    events_list = extract_names(ast.literal_eval(events))
-    save_dataframe(create_dataframe_data(char_id, events_list))
+def extract_sub_entity_from_entity(entity_id: str, data_set: list, looking_for: str, entity: str):
+    """
+    Receives an entity id and a list of sub entities.
+    Creates a pandas df with that data and then saves it to a csv file.
 
+    :param entity_id: id of the entity
+    :param data_set: list of sub entities to match to the entity id
+    :param looking_for: name of the sub entity (comics, events etc.)
+    :param entity: name of the main entity (character, creator etc.)
 
-def check_returned_data_for_events():
-    df = pd.read_csv("data/characters.csv")
-    ids = []
-    for index, row in df.iterrows():
-        char_id = row['character_id']
+    """
+    data_list = extract_names(ast.literal_eval(data_set))
+    save_dataframe(data=create_dataframe_data(entity_id, data_list), file_path=f"data/{entity}s_in_{looking_for}-test.csv",)
 
-        if int(row['available_events']) > int(row['fetched_events']):
-            ids.append(char_id)
-        else:
-            extract_events(char_id, row['list_of_events'])
-
-    if ids:
-        save_file(data=ids, file_path="data/characters_ids_for_events_ingestion.txt")
-
-
-# generalise the functions here ############
-
-
-def check_returned_data_for_comics():
-    df = pd.read_csv("data/creators.csv")
-    ids = []
-    for index, row in df.iterrows():
-        creator_id = row['creator_id']
-
-        if int(row['available_comics']) > int(row['fetched_comics']):
-            ids.append(creator_id)
-        else:
-            extract_comics_from_creators(creator_id, row['list_of_comics'])
-
-    if ids:
-        save_file(data=ids, file_path="data/creator_ids_for_comics_ingestion.txt")
-
-
-def extract_comics_from_creators(creator_id, comics):
-    comics_list = extract_names(ast.literal_eval(comics))
-    save_dataframe(create_dataframe_data(creator_id, comics_list))
-
-# check_returned_data_for_comics()
