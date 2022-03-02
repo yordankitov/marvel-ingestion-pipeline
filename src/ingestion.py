@@ -41,7 +41,7 @@ def ingest_entity(limit, offset, entity, order_by, modified):
     except requests.exceptions.Timeout as errt:
         print("Timeout Error:", errt)
     except requests.exceptions.RequestException as err:
-        print("OOps: Something Else", err)
+        print("OOps: Something Else:", err)
 
     return response.json(), another_request
 
@@ -136,7 +136,7 @@ def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
     except requests.exceptions.Timeout as errt:
         print("Timeout Error:", errt)
     except requests.exceptions.RequestException as err:
-        print("OOps: Something Else", err)
+        print("OOps: Something Else:", err)
 
     return events_list
 
@@ -145,13 +145,24 @@ def extract_and_save_events_from_characters(limit):
     ids = ast.literal_eval(read_file("data/characters_ids_for_events_ingestion.txt"))
     http = retries_session()
     checkpoint = read_checkpoint("../checkpoints/character_id_for_ingesting_events.txt")
-    start_index = ids.index(checkpoint)
+    start_index = None
+
+    if checkpoint:
+        try:
+            start_index = ids.index(int(checkpoint))
+        except ValueError:
+            print('id is not found')
+    else:
+        start_index = 0
+
     for char_id in ids[start_index:]:
         comics = ingest_events_from_characters(http=http, char_id=char_id, offset=0, limit=limit)
-
-        events_from_characters_simplified = [simplify_events_from_characters(char_id, y) for x in comics for y in x]
-        store_to_csv(events_from_characters_simplified, 'characters_in_events_fetched')
-        save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_events.txt")
+        if comics:
+            events_from_characters_simplified = [simplify_events_from_characters(char_id, y) for x in comics for y in x]
+            store_to_csv(events_from_characters_simplified, 'characters_in_events_fetched')
+            save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_events.txt")
+        else:
+            break
 
 
 def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=None):
@@ -183,7 +194,7 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
     except requests.exceptions.Timeout as errt:
         print("Timeout Error:", errt)
     except requests.exceptions.RequestException as err:
-        print("OOps: Something Else", err)
+        print("OOps: Something Else:", err)
 
     return comics_list
 
@@ -205,13 +216,12 @@ def extract_and_save_comics_from_characters(limit):
     for char_id in ids[start_index:]:
 
         comics = ingest_comics_from_entity(http=http, entity_id=char_id, offset=0, limit=limit, entity='characters')
-        comics_from_characters_simplified = [simplify_comics_from_characters(char_id, y) for x in comics for y in x]
-        store_to_csv(comics_from_characters_simplified, 'characters_in_comics-final')
-        save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_comics.txt")
-
-extract_and_save_comics_from_characters(100)
-
-
+        if comics:
+            comics_from_characters_simplified = [simplify_comics_from_characters(char_id, y) for x in comics for y in x]
+            store_to_csv(comics_from_characters_simplified, 'characters_in_comics-final')
+            save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_comics.txt")
+        else:
+            break
 
 
 def extract_and_save_comics_from_creators(limit):
@@ -221,16 +231,10 @@ def extract_and_save_comics_from_creators(limit):
     start_index = ids.index(checkpoint)
     for creator_id in ids[start_index:]:
         comics = ingest_comics_from_entity(http=http, entity_id=2053, offset=0, limit=limit, entity='creators')
-        comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, y) for x in comics for y in x]
-        store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
-        save_checkpoint(creator_id, "../checkpoints/creator_id_for_ingesting_comics.txt")
+        if comics:
+            comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, y) for x in comics for y in x]
+            store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
+            save_checkpoint(creator_id, "../checkpoints/creator_id_for_ingesting_comics.txt")
+        else:
+            break
 
-
-# content = read_file('data/test.txt')
-# content = ast.literal_eval(content)
-# whole_list = [x for y in content for x in y]
-#
-# print(len(whole_list))
-
-# df = pd.read_csv('data/test-comparison/characters_in_comics-final - characters_in_comics-final.csv')
-# print(df['character_id'].value_counts().idxmax())
