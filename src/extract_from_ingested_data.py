@@ -12,6 +12,7 @@ def extract_names(data_set: dict) -> list:
     """
     return [d['name'] for d in data_set]
 
+#
 
 def create_dataframe_data(char_id: str, list_of_comics: list) -> dict:
     """
@@ -62,7 +63,7 @@ def check_returned_data_entity(entity: str, looking_for: str):
             extract_sub_entity_from_entity(entity_id, row[f"list_of_{looking_for}"], looking_for, entity)
 
     if ids:
-        save_file(data=ids, file_path=f"data/{entity}s_ids_for_{looking_for}_ingestion-test.txt")
+        save_file(data=ids, file_path=f"data/{entity}s_ids_for_{looking_for}_ingestion-final.txt")
 
 
 def extract_sub_entity_from_entity(entity_id: str, data_set: list, looking_for: str, entity: str):
@@ -77,5 +78,5 @@ def extract_sub_entity_from_entity(entity_id: str, data_set: list, looking_for: 
 
     """
     data_list = extract_names(ast.literal_eval(data_set))
-    save_dataframe(data=create_dataframe_data(entity_id, data_list), file_path=f"data/{entity}s_in_{looking_for}-test.csv",)
+    save_dataframe(data=create_dataframe_data(entity_id, data_list), file_path=f"data/{entity}s_in_{looking_for}-final.csv")
 

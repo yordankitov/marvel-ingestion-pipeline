@@ -1,7 +1,10 @@
+import boto3
 from ingestion import extract_and_save_characters_data, extract_and_save_creators_data, extract_and_save_events_data, extract_and_save_comics_data, extract_and_save_comics_from_creators, extract_and_save_comics_from_characters, extract_and_save_events_from_characters
 from extract_from_ingested_data import check_returned_data_entity
 from upload_to_s3 import create_bucket, upload_file
 from helpers import check_entity_last_update
+
+client = boto3.client('s3')
 
 
 def get_checkpoint(entity):
@@ -11,8 +14,8 @@ def get_checkpoint(entity):
     else:
         return None
 
-def ingestion():
 
+def ingestion():
     extract_and_save_characters_data(limit=100, offset=0, order_by='modified', modified=get_checkpoint('characters'))
     extract_and_save_creators_data(limit=100, offset=0, order_by='modified', modified=get_checkpoint('creators'))
     extract_and_save_comics_data(limit=100, offset=0, order_by='modified', modified=get_checkpoint('comics'))
@@ -43,4 +46,4 @@ def main():
 
 
 if __name__ == '__main__':
-    upload_to_aws_s3()
+    pass

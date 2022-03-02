@@ -17,6 +17,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/src/data/characters_in_comics-final.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/src/data/characters_in_comics-test.csv">
           <value>
             <Attribute>
@@ -102,6 +109,20 @@
           </value>
         </entry>
         <entry key="/src/data/stories.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/src/data/test-comparison/anton - anton.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/src/data/test-comparison/characters_in_comics-final - characters_in_comics-final.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

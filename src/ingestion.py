@@ -1,3 +1,4 @@
+import pandas as pd
 import requests
 import ast
 
@@ -49,10 +50,11 @@ def extract_and_save_comics_data(limit, offset, order_by, modified=None):
     count = 0
     # offset = read_checkpoint()
     while True:
-        comics, another_request = ingest_entity(limit=limit, offset=offset, entity='comics', order_by=order_by, modified=modified)
+        comics, another_request = ingest_entity(limit=limit, offset=offset, entity='comics',
+                                                order_by=order_by, modified=modified)
 
-        # comics_simplified = [simplify_comics_data(x) for x in comics[0]['data']['results']]
-        # store_to_csv(comics_simplified, 'comics')
+        comics_simplified = [simplify_comics_data(x) for x in comics['data']['results']]
+        store_to_csv(comics_simplified, 'comics')
         print("request number", count)
         count += 1
         offset = offset + limit
@@ -116,12 +118,13 @@ def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
 
     try:
         while True:
-            response = http.get(generate_url("characters/{id}/events".format(id=char_id), limit=100), params={'orderBy': 'modified', 'offset': offset, 'modifiedSince': modified_since})
+            response = http.get(generate_url("characters/{id}/events".format(id=char_id), limit=100),
+                                params={'orderBy': 'modified', 'offset': offset, 'modifiedSince': modified_since})
             events_list.append(response.json()['data']['results'])
             print(char_id, 'first call has ', len(response.json()['data']['results']))
 
             total_values = response.json()['data']['offset'] + response.json()['data']['count']
-            if response.json()['data']['total'] > total_values:
+            if response.json()['data']['total'] == total_values:
                 offset = offset + limit
             else:
                 break
@@ -146,7 +149,7 @@ def extract_and_save_events_from_characters(limit):
     for char_id in ids[start_index:]:
         comics = ingest_events_from_characters(http=http, char_id=char_id, offset=0, limit=limit)
 
-        events_from_characters_simplified = [simplify_events_from_characters(char_id, x) for x in comics[0]]
+        events_from_characters_simplified = [simplify_events_from_characters(char_id, y) for x in comics for y in x]
         store_to_csv(events_from_characters_simplified, 'characters_in_events_fetched')
         save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_events.txt")
 
@@ -161,16 +164,17 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
 
     try:
         while True:
-            response = http.get(generate_url("{entity}/{id}/comics".format(entity=entity, id=entity_id), limit=limit), params={'orderBy': 'modified', 'offset': offset, 'modifiedSince': modified_since})
+            response = http.get(generate_url("{entity}/{id}/comics".format(entity=entity, id=entity_id), limit=limit),
+                                params={'orderBy': 'modified', 'offset': offset, 'modifiedSince': modified_since})
             comics_list.append(response.json()['data']['results'])
             print(entity_id, 'first call has ', len(response.json()['data']['results']))
 
             total_values = response.json()['data']['offset'] + response.json()['data']['count']
 
-            if response.json()['data']['total'] > total_values:
-                offset = offset + limit
-            else:
+            if response.json()['data']['total'] == total_values:
                 break
+            else:
+                offset = offset + limit
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
@@ -185,15 +189,29 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
 
 
 def extract_and_save_comics_from_characters(limit):
-    ids = ast.literal_eval(read_file("data/characters_ids_for_comics_ingestion.txt"))
+    ids = ast.literal_eval(read_file("data/characters_ids_for_comics_ingestion-final.txt"))
     http = retries_session()
-    checkpoint = read_checkpoint("../checkpoints/creator_id_for_ingesting_comics.txt")
-    start_index = ids.index(checkpoint)
+    checkpoint = read_checkpoint("../checkpoints/character_id_for_ingesting_comics.txt")
+    start_index = None
+
+    if checkpoint:
+        try:
+            start_index = ids.index(int(checkpoint))
+        except ValueError:
+            print('id is not found')
+    else:
+        start_index = 0
+
     for char_id in ids[start_index:]:
+
         comics = ingest_comics_from_entity(http=http, entity_id=char_id, offset=0, limit=limit, entity='characters')
-        comics_from_characters_simplified = [simplify_comics_from_characters(char_id, x) for x in comics[0]]
-        store_to_csv(comics_from_characters_simplified, 'characters_in_comics')
+        comics_from_characters_simplified = [simplify_comics_from_characters(char_id, y) for x in comics for y in x]
+        store_to_csv(comics_from_characters_simplified, 'characters_in_comics-final')
         save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_comics.txt")
+
+extract_and_save_comics_from_characters(100)
+
+
 
 
 def extract_and_save_comics_from_creators(limit):
@@ -203,7 +221,16 @@ def extract_and_save_comics_from_creators(limit):
     start_index = ids.index(checkpoint)
     for creator_id in ids[start_index:]:
         comics = ingest_comics_from_entity(http=http, entity_id=2053, offset=0, limit=limit, entity='creators')
-        comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, x) for x in comics[0]]
+        comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, y) for x in comics for y in x]
         store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
         save_checkpoint(creator_id, "../checkpoints/creator_id_for_ingesting_comics.txt")
 
+
+# content = read_file('data/test.txt')
+# content = ast.literal_eval(content)
+# whole_list = [x for y in content for x in y]
+#
+# print(len(whole_list))
+
+# df = pd.read_csv('data/test-comparison/characters_in_comics-final - characters_in_comics-final.csv')
+# print(df['character_id'].value_counts().idxmax())
