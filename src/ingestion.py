@@ -91,6 +91,7 @@ def extract_and_save_events_data(limit, offset, order_by, modified=None):
         if not another_request:
             break
 
+extract_and_save_events_data(100, 0, 'modified', '2020-02-28')
 
 def extract_and_save_creators_data(limit, offset, order_by, modified=None):
     count = 0
