@@ -1,6 +1,7 @@
 import pandas as pd
 import ast
-from helpers import save_file
+from helpers import save_file, create_in_memory_file, create_in_memory_csv
+from upload_to_s3 import upload_file
 
 
 def extract_names(data_set: dict) -> list:
@@ -56,14 +57,17 @@ def check_returned_data_entity(entity: str, looking_for: str):
     ids = []
     for index, row in df.iterrows():
         entity_id = row[f'{entity}_id']
-
+        print(row)
         if int(row[f'available_{looking_for}']) > int(row[f'fetched_{looking_for}']):
             ids.append(entity_id)
         else:
             extract_sub_entity_from_entity(entity_id, row[f"list_of_{looking_for}"], looking_for, entity)
 
     if ids:
-        save_file(data=ids, file_path=f"data/{entity}s_ids_for_{looking_for}_ingestion-final.txt")
+        # save_file(data=ids, file_path=f"data/{entity}s_ids_for_{looking_for}_ingestion-final.txt")
+        stream_file = create_in_memory_file(ids)
+        upload_file(f"data/{entity}s_ids_for_{looking_for}_ingestion-final.txt", stream_file)
+
 
 
 def extract_sub_entity_from_entity(entity_id: str, data_set: list, looking_for: str, entity: str):
@@ -77,6 +81,11 @@ def extract_sub_entity_from_entity(entity_id: str, data_set: list, looking_for: 
     :param entity: name of the main entity (character, creator etc.)
 
     """
+    print('extracting now')
     data_list = extract_names(ast.literal_eval(data_set))
-    save_dataframe(data=create_dataframe_data(entity_id, data_list), file_path=f"data/{entity}s_in_{looking_for}-final.csv")
+    # save_dataframe(data=create_dataframe_data(entity_id, data_list), file_path=f"data/{entity}s_in_{looking_for}-final.csv")
+    csv_data = create_in_memory_csv(data = create_dataframe_data(entity_id, data_list))
+    upload_file(f"data/{entity}s_in_{looking_for}-final.csv", csv_data)
 
+
+check_returned_data_entity('creator', 'comics')

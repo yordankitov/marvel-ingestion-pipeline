@@ -1,8 +1,10 @@
+import ast
 import os
 import requests
 import hashlib
 import csv
 import pandas as pd
+from io import StringIO
 from datetime import datetime
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -94,3 +96,20 @@ def retries_session():
     http.mount("http://", adapter)
 
     return http
+
+
+def create_in_memory_csv(data, headers=None):
+    stream = StringIO()
+    df = pd.DataFrame(data)
+    df.to_csv(stream, mode='a', index=False, header=False)
+    csv_string_object = stream.getvalue()
+
+    return csv_string_object
+
+def create_in_memory_file(data):
+    stream = StringIO()
+    stream.write(str(data))
+    content = stream.getvalue()
+
+    return content
+

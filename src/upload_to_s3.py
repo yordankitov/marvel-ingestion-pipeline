@@ -1,4 +1,8 @@
 import boto3
+import io
+
+
+from io import StringIO
 
 client = boto3.client('s3')
 resource = boto3.resource('s3')
@@ -37,10 +41,10 @@ def check_bucket_exists_and_you_have_permission_for_access():
 
 # check_bucket_exists_and_you_have_permission_for_access()
 
-def upload_file(bucket_name, file_name):
+def upload_file(file_name, content):
     try:
-        resource.Object(bucket_name, file_name).upload_file(Filename=file_name)
+        # resource.Object(bucket_name, file_name).upload_file(Filename=file_name)
+        resource.Object('il-tapde-final-exercise-yordan', file_name).put(Body=content)
     except Exception as e:
         print(e)
 
-# upload_file('il-tapde-final-exercise-yordan', 'data/characters_in_comics-final.csv')
