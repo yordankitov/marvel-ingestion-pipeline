@@ -87,5 +87,3 @@ def extract_sub_entity_from_entity(entity_id: str, data_set: list, looking_for: 
     csv_data = create_in_memory_csv(data = create_dataframe_data(entity_id, data_list))
     upload_file(f"data/{entity}s_in_{looking_for}-final.csv", csv_data)
 
-
-check_returned_data_entity('creator', 'comics')
