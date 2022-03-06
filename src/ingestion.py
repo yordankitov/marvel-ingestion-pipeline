@@ -3,12 +3,12 @@ import requests
 import ast
 from datetime import datetime
 
-from comics import simplify_comics_data, simplify_comics_from_characters, simplify_comics_from_creators
-from events import simplify_events_data, simplify_events_from_characters
-from characters import simplify_character_data
-from creators import simplify_creators_data
-from helpers import create_in_memory_csv, generate_url, retries_session, read_file, save_checkpoint, read_snowflake_checkpoint, store_to_csv
-from upload_to_s3 import upload_file
+from src.comics import simplify_comics_data, simplify_comics_from_characters, simplify_comics_from_creators
+from src.events import simplify_events_data, simplify_events_from_characters
+from src.characters import simplify_character_data
+from src.creators import simplify_creators_data
+from src.helpers import create_in_memory_csv, generate_url, retries_session, read_file, save_checkpoint, read_snowflake_checkpoint, store_to_csv
+from src.upload_to_s3 import upload_file
 
 
 def ingest_entity(limit, offset, entity, order_by, modified):
