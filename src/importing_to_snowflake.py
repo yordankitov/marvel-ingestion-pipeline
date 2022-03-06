@@ -204,10 +204,11 @@ def snowflake_connection(user, password, account, db, schema):
             schema=schema,
             role=role
         )
+        return con
     except Exception as e:
         print(e)
 
-    return con
+
 
 
 def copy_to_snowflake(con, file_path, abbreviation, schema, table):
@@ -250,12 +251,40 @@ def get_table_data_as_dataframe(table):
 
         connection = engine.connect()
         df = pd.read_sql(query, connection)
-        connection.close()
+
 
         return df
 
     except Exception as e:
         print(e)
+    finally:
+        connection.close()
+
+
+def test(table):
+    engine_1 = create_engine(URL(
+        user=user,
+        password=password,
+        account=account,
+        database=db,
+        schema=schema,
+        role=role
+    ))
+
+    engine_1_con = engine_1.connect()
+    try:
+
+        engine_cur = engine_1_con.execute('SELECT * FROM {table};'.format(table=table))
+        total_rows = engine_cur.rowcount
+    except Exception as e:
+        print(e)
+    finally:
+        engine_1_con.close()
+        return total_rows
+
+def t():
+    tt = test('characters')
+    return tt
 
 
 def populate_db():
@@ -280,4 +309,3 @@ def populate_db():
 
     con.close()
 
-populate_db()

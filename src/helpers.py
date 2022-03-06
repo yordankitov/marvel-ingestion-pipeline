@@ -47,7 +47,7 @@ def store_to_csv(data, entity_type):
         print(e)
 
 
-def read_checkpoint(file_path):
+def read_local_checkpoint(file_path):
     try:
         with open(file_path, "r", encoding="utf-8") as checkpoint:
             content = checkpoint.readline()
@@ -59,6 +59,13 @@ def read_checkpoint(file_path):
         print(e)
         return 0
 
+def read_snowflake_checkpoint(table):
+    # df = get_table_data_as_dataframe(table)
+    # print(type(df))
+    # print(t())
+    pass
+
+# read_snowflake_checkpoint('characters')
 
 def check_entity_last_update(entity):
     df = pd.read_csv(f'data/{entity}.csv'.format(enitity=entity))
@@ -70,10 +77,10 @@ def check_entity_last_update(entity):
 #     print(x, check_entity_last_update(x))
 
 
-def generate_url(type, limit):
+def generate_url(enitity, limit):
     ts = datetime.now()
     ts = str(ts).replace(' ', '_')
-    return BASE_URL.format(type=type, time_stamp=ts, limit=limit, api_key=os.environ['API_KEY'],
+    return BASE_URL.format(type=enitity, time_stamp=ts, limit=limit, api_key=os.environ['API_KEY'],
                            hash=create_hash_for_login(ts))
 
 

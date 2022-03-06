@@ -19,11 +19,11 @@ def create_bucket(bucket_name):
     return bucket_response
 
 
-def upload_file(bucket_name, file_name):
-    try:
-        resource.Object(bucket_name, file_name).upload_file(Filename=file_name)
-    except Exception as e:
-        print(e)
+# def upload_file(bucket_name, file_name):
+#     try:
+#         resource.Object(bucket_name, file_name).upload_file(Filename=file_name)
+#     except Exception as e:
+#         print(e)
 
 
 def check_bucket_exists_and_you_have_permission_for_access():

@@ -1,12 +1,13 @@
 import pandas as pd
 import requests
 import ast
+from datetime import datetime
 
 from comics import simplify_comics_data, simplify_comics_from_characters, simplify_comics_from_creators
 from events import simplify_events_data, simplify_events_from_characters
 from characters import simplify_character_data
 from creators import simplify_creators_data
-from helpers import create_in_memory_csv ,generate_url, retries_session, read_file, save_checkpoint, read_checkpoint, store_to_csv
+from helpers import create_in_memory_csv, generate_url, retries_session, read_file, save_checkpoint, read_snowflake_checkpoint, store_to_csv
 from upload_to_s3 import upload_file
 
 
@@ -65,18 +66,23 @@ def extract_and_save_comics_data(limit, offset, order_by, modified=None):
 
 def extract_and_save_characters_data(limit, offset, order_by, modified=None):
     count = 0
-    # offset = read_checkpoint()
-    while True:
-        characters, another_request = ingest_entity(limit=limit, offset=offset, entity='characters', order_by=order_by, modified=modified)
-
-        # characters_simplified = [simplify_character_data(x) for x in characters['data']['results']]
-        # store_to_csv(characters_simplified, 'characters')
-        print("request number", count)
-        count += 1
-        offset = offset + limit
-        if not another_request:
-            break
-
+    offset = read_snowflake_checkpoint('characters')
+    print(offset)
+    # while True:
+    #     characters, another_request = ingest_entity(limit=limit, offset=offset, entity='characters', order_by=order_by, modified=modified)
+    #
+    #     characters_simplified = [simplify_character_data(x) for x in characters['data']['results']]
+    #     # store_to_csv(characters_simplified, 'characters')
+    #     csv_string_object = create_in_memory_csv(characters_simplified)
+    #
+    #     upload_file('data/characters/characters-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')), csv_string_object)
+    #     print("request number", count)
+    #     count += 1
+    #     offset = offset + limit
+    #     # if not another_request:
+    #     #     break
+    #     break
+# extract_and_save_characters_data(100, 0, 'modified')
 
 def extract_and_save_events_data(limit, offset, order_by, modified=None):
     count = 0
@@ -88,7 +94,7 @@ def extract_and_save_events_data(limit, offset, order_by, modified=None):
         headers = events_simplified[0].keys()
 
         csv_string_object = create_in_memory_csv(events_simplified, headers)
-        upload_file('il-tapde-final-exercise-yordan', 'test.csv', csv_string_object)
+        upload_file('test.csv', csv_string_object)
         # store_to_csv(events_simplified, 'events')
 
         print("request number", count)
