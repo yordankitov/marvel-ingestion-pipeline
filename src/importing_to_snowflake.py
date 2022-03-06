@@ -1,5 +1,8 @@
 import snowflake.connector
 import os
+import pandas as pd
+from snowflake.sqlalchemy import URL
+from sqlalchemy import create_engine
 
 user = os.getenv('SNOW_USER')
 password = os.getenv('SNOW_PASS')
@@ -139,6 +142,7 @@ def database_config(con, schema):
     except Exception as e:
         print(e)
 
+
 def create_s3_stage_for_snowflake(con, db, schema):
     create_storage_integration = """create storage integration IF NOT EXISTS s3_integration_yordan
           type = external_stage
@@ -161,9 +165,6 @@ def create_s3_stage_for_snowflake(con, db, schema):
         URL = 's3://il-tapde-final-exercise-yordan/data/'
         storage_integration = s3_integration_yordan
         file_format = {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema)
-
-
-    # separate func
 
     try:
         con.cursor().execute(create_storage_integration)
@@ -232,6 +233,31 @@ def copy_to_snowflake(con, file_path, abbreviation, schema, table):
         print(e)
 
 
+def get_table_data_as_dataframe(table):
+    url = URL(
+        user=user,
+        password=password,
+        account=account,
+        database=db,
+        schema=schema,
+        role=role
+    )
+
+    query = "select * from {table}".format(table=table)
+
+    try:
+        engine = create_engine(url)
+
+        connection = engine.connect()
+        df = pd.read_sql(query, connection)
+        connection.close()
+
+        return df
+
+    except Exception as e:
+        print(e)
+
+
 def populate_db():
     """
     Main function that structures everything to be executed chronologically
@@ -250,5 +276,8 @@ def populate_db():
     create_s3_stage_for_snowflake(con, db, schema)
     copy_s3_stage_to_sf(con, db, schema, 'characters')
 
+    print(get_table_data_as_dataframe('characters'))
+
     con.close()
 
+populate_db()
