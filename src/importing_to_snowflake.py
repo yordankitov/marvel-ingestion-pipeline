@@ -213,54 +213,75 @@ def create_s3_stages_for_snowflake(con, db, schema):
         print(e)
 
 
-def create_views(con, db, schema):
-    create_characters_view = """create or replace view {db}.{schema}.characters_view as
-            select CHARACTER_ID, NAME, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_COMICS, AVAILABLE_EVENTS
-            from {db}.{schema}.characters group by CHARACTER_ID, NAME, DESCRIPTION, AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, 
-            AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
-    """.format(db=db, schema=schema)
+def create_characters_view(db, schema):
+    characters_view = """create or replace view {db}.{schema}.characters_view as
+                select CHARACTER_ID, NAME, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_COMICS, AVAILABLE_EVENTS
+                from {db}.{schema}.characters group by CHARACTER_ID, NAME, DESCRIPTION, AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, 
+                AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
+        """.format(db=db, schema=schema)
 
-    create_comics_view = """create or replace view {db}.{schema}.comics_view as
-           select COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, max(date_modified) as DATE_MODIFIED, ISBN, UPC, 
-           DIAMOND_CODE, EAN, ISSN, FORMAT, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_EVENTS
-           from {db}.{schema}.comics group by COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, max(date_modified) as DATE_MODIFIED, 
-           ISBN, UPC, 
-           DIAMOND_CODE, EAN, ISSN, FORMAT, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES, AVAILABLE_CREATORS, 
-           AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS
-       """.format(db=db, schema=schema)
+    return characters_view
 
-    create_creators_view = """create or replace view {db}.{schema}.creators_view as
-           select CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, max(date_modified) as DATE_MODIFIED, AVAILABLE_COMICS,
-           AVAILABLE_STORIES, AVAILABLE_SERIES, AVAILABLE_EVENTS
-           from {db}.{schema}.creators group by CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, max(date_modified) as DATE_MODIFIED, 
-           AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_SERIES, FETCHED_SERIES, 
-           LIST_OF_SERIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
-       """.format(db=db, schema=schema)
 
-    create_events_view = """create or replace view {db}.{schema}.events_view as
-           select EVENT_ID, TITLE, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_COMICS,
-           AVAILABLE_SERIES
-           from {db}.{schema}.events group by EVENT_ID, TITLE, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_CREATORS,
-           FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_COMICS, FETCHED_COMICS, 
-           LIST_OF_COMICS, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES;
+def create_comics_view(db, schema):
+    comics_view = """create or replace view {db}.{schema}.comics_view as
+               select COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, max(date_modified) as DATE_MODIFIED, ISBN, UPC, 
+               DIAMOND_CODE, EAN, ISSN, FORMAT, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_EVENTS
+               from {db}.{schema}.comics group by COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, max(date_modified) as DATE_MODIFIED, 
+               ISBN, UPC, 
+               DIAMOND_CODE, EAN, ISSN, FORMAT, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES, AVAILABLE_CREATORS, 
+               AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS
            """.format(db=db, schema=schema)
 
-    create_characters_in_comics_view = """create or replace view {db}.{schema}.characters_in_comics_view as
-           select distinct CHARACTER_ID, COMICS_NAME
-           from {db}.{schema}.characters_in_comics group by CHARACTER_ID, COMICS_NAME""".format(db=db, schema=schema)
+    return comics_view
 
-    create_characters_in_events_view = """create or replace view {db}.{schema}.characters_in_events_view as
-               select distinct CHARACTER_ID, EVENTS_NAME
-               from {db}.{schema}.characters_in_events group by CHARACTER_ID, EVENTS_NAME""".format(db=db, schema=schema)
 
-    create_creators_in_comics_view = """create or replace view {db}.{schema}.creators_in_comics_view as
-              select distinct CREATOR_ID, COMICS_NAME
-              from {db}.{schema}.creators_in_comics group by CREATOR_ID, COMICS_NAME""".format(db=db, schema=schema)
+def create_creators_view(db, schema):
+    creators_view = """create or replace view {db}.{schema}.creators_view as
+               select CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, max(date_modified) as DATE_MODIFIED, AVAILABLE_COMICS,
+               AVAILABLE_STORIES, AVAILABLE_SERIES, AVAILABLE_EVENTS
+               from {db}.{schema}.creators group by CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, max(date_modified) as DATE_MODIFIED, 
+               AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_SERIES, FETCHED_SERIES, 
+               LIST_OF_SERIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
+           """.format(db=db, schema=schema)
 
-    try:
-        con.cursor().execute(create_characters_view)
-    except Exception as e:
-        print(e)
+    return creators_view
+
+
+def create_events_view(db,schema):
+    events_view = """create or replace view {db}.{schema}.events_view as
+               select EVENT_ID, TITLE, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_COMICS,
+               AVAILABLE_SERIES
+               from {db}.{schema}.events group by EVENT_ID, TITLE, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_CREATORS,
+               FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_COMICS, FETCHED_COMICS, 
+               LIST_OF_COMICS, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES;
+               """.format(db=db, schema=schema)
+
+    return events_view
+
+
+def create_characters_in_comics_view(db, schema):
+    characters_in_comics_view = """create or replace view {db}.{schema}.characters_in_comics_view as
+               select distinct CHARACTER_ID, COMICS_NAME
+               from {db}.{schema}.characters_in_comics group by CHARACTER_ID, COMICS_NAME""".format(db=db, schema=schema)
+
+    return characters_in_comics_view
+
+
+def create_characters_in_events_view(db, schema):
+    characters_in_events_view = """create or replace view {db}.{schema}.characters_in_events_view as
+                   select distinct CHARACTER_ID, EVENTS_NAME
+                   from {db}.{schema}.characters_in_events group by CHARACTER_ID, EVENTS_NAME""".format(db=db, schema=schema)
+
+    return characters_in_events_view
+
+
+def create_creators_in_comics_view(db, schema):
+    creators_in_comics_view = """create or replace view {db}.{schema}.creators_in_comics_view as
+                  select distinct CREATOR_ID, COMICS_NAME
+                  from {db}.{schema}.creators_in_comics group by CREATOR_ID, COMICS_NAME""".format(db=db, schema=schema)
+
+    return creators_in_comics_view
 
 
 def copy_s3_stage_to_sf(con, db, schema, entity):

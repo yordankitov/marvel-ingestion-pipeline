@@ -4,7 +4,7 @@ from src.ingestion import extract_and_save_characters_data, extract_and_save_cre
 from src.extract_from_ingested_data import check_returned_data_entity
 from src.upload_to_s3 import create_bucket
 from src.helpers import check_entity_last_update
-from src.importing_to_snowflake import snowflake_connection, copy_s3_stage_to_sf, read_table, create_views
+from src.importing_to_snowflake import *
 
 client = boto3.client('s3')
 user = os.getenv('SNOW_USER')
@@ -49,8 +49,18 @@ def copy_stages_to_sf(table):
         print(e)
 
 def create_views_on_sf():
-    with snowflake_connection() as con:
-        create_views(con, db, schema)
+    try:
+        with snowflake_connection() as con:
+            con.cursor().execute(create_characters_view(db, schema))
+            con.cursor().execute(create_comics_view(db, schema))
+            con.cursor().execute(create_creators_view(db, schema))
+            con.cursor().execute(create_events_view(db, schema))
+            con.cursor().execute(create_characters_in_comics_view(db, schema))
+            con.cursor().execute(create_characters_in_events_view(db, schema))
+            con.cursor().execute(create_creators_in_comics_view(db, schema))
+    except Exception as e:
+        print(e)
+
 
 def main():
     ingestion()
