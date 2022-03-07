@@ -20,8 +20,10 @@ def test_retries_session_raises_retry_error_for_reaching_max_retries():
 
 @pytest.mark.parametrize("limit, offset, entity, order_by, modified", [(100, 0, 'characters', 'modified', None)])
 def test_fetching_raises_maximum_retries_exceeded_error(limit, offset, entity, order_by, modified):
+    code = {'status_code': 502}
+    mock_object = mock(code)
 
-    with when(requests).get(...).thenReturn(mock({"status_code": 502})):
+    with when(requests).get(...).thenReturn(mock_object):
         with pytest.raises(requests.exceptions.RequestException):
             ingest_entity(limit, offset, entity, order_by, modified)
         verify(requests, times=5).get(...)

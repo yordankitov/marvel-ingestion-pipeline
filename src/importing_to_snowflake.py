@@ -8,8 +8,9 @@ user = os.getenv('SNOW_USER')
 password = os.getenv('SNOW_PASS')
 db = os.getenv('DB')
 account = os.getenv('ACCOUNT')
-schema = os.getenv('DEV_SCHEMA')
+schema = os.getenv('SCHEMA')
 role = os.getenv('ROLE')
+wh = os.getenv('WH')
 
 
 def database_config(con, schema):
@@ -188,7 +189,7 @@ def copy_s3_stage_to_sf(con, db, schema, entity):
         print(e)
 
 
-def snowflake_connection(user, password, account, db, schema):
+def snowflake_connection():
     """
     Establishes a connection to the db
 
@@ -202,7 +203,8 @@ def snowflake_connection(user, password, account, db, schema):
             account=account,
             database=db,
             schema=schema,
-            role=role
+            role=role,
+            wharehouse=wh
         )
         return con
     except Exception as e:
@@ -234,57 +236,17 @@ def copy_to_snowflake(con, file_path, abbreviation, schema, table):
         print(e)
 
 
-def get_table_data_as_dataframe(table):
-    url = URL(
-        user=user,
-        password=password,
-        account=account,
-        database=db,
-        schema=schema,
-        role=role
-    )
-
-    query = "select * from {table}".format(table=table)
-
+def read_table(table):
+    con = snowflake_connection()
     try:
-        engine = create_engine(url)
 
-        connection = engine.connect()
-        df = pd.read_sql(query, connection)
+        data = con.cursor().execute('SELECT * FROM {db}.{schema}.{table};'.format(table=table, db=db, schema=schema)).fetchall()
 
-        print(df)
-        return df
-
+        return data
     except Exception as e:
         print(e)
     finally:
-        connection.close()
-get_table_data_as_dataframe('characters')
-
-def table_test(table):
-    engine_1 = create_engine(URL(
-        user=user,
-        password=password,
-        account=account,
-        database=db,
-        schema=schema,
-        role=role
-    ))
-
-    engine_1_con = engine_1.connect()
-    try:
-
-        engine_cur = engine_1_con.execute('SELECT * FROM {table};'.format(table=table))
-        total_rows = engine_cur.rowcount
-    except Exception as e:
-        print(e)
-    finally:
-        engine_1_con.close()
-        return total_rows
-
-def t():
-    tt = table_test('characters')
-    return tt
+        con.close()
 
 
 def populate_db():
@@ -294,7 +256,7 @@ def populate_db():
     :param:
     :return:
     """
-    con = snowflake_connection(user, password, account, db, schema)
+    con = snowflake_connection()
 
     database_config(con, schema)
 
@@ -304,8 +266,6 @@ def populate_db():
 
     create_s3_stage_for_snowflake(con, db, schema)
     copy_s3_stage_to_sf(con, db, schema, 'characters')
-
-    print(get_table_data_as_dataframe('characters'))
 
     con.close()
 

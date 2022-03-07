@@ -9,6 +9,7 @@ from datetime import datetime
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
+from src.importing_to_snowflake import read_table
 BASE_URL = "https://gateway.marvel.com:443/v1/public/{type}?ts={time_stamp}&limit={limit}&apikey={api_key}&hash={hash}"
 
 
@@ -59,13 +60,12 @@ def read_local_checkpoint(file_path):
         print(e)
         return 0
 
-def read_snowflake_checkpoint(table):
-    # df = get_table_data_as_dataframe(table)
-    # print(type(df))
-    # print(t())
-    pass
 
-# read_snowflake_checkpoint('characters')
+def read_snowflake_checkpoint(table):
+    data = read_table(table)
+    print(data[-1])
+    print(len(data))
+
 
 def check_entity_last_update(entity):
     df = pd.read_csv(f'data/{entity}.csv'.format(enitity=entity))
