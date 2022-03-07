@@ -3,7 +3,7 @@ import requests
 from mockito import when, mock, verify
 
 from src.helpers import retries_session, generate_url
-from src.ingestion import ingest_entity, MaximumRetriesExceededError
+from src.ingestion import ingest_entity
 
 @pytest.mark.skip
 def test_retries_session_returns_requests_session_object():
@@ -17,7 +17,7 @@ def test_retries_session_raises_retry_error_for_reaching_max_retries():
         session.get('https://httpstat.us/429')
 
 
-@pytest.mark.skip
+
 @pytest.mark.parametrize("limit, offset, entity, order_by, modified", [(100, 0, 'characters', 'modified', None)])
 def test_fetching_raises_maximum_retries_exceeded_error(limit, offset, entity, order_by, modified):
 

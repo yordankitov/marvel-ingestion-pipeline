@@ -3,13 +3,6 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="/src/data/character_ids.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="/src/data/characters.csv">
           <value>
             <Attribute>
@@ -32,13 +25,6 @@
           </value>
         </entry>
         <entry key="/src/data/characters_in_comics.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="/src/data/characters_in_comics_fetched.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -81,20 +67,6 @@
           </value>
         </entry>
         <entry key="/src/data/creators_in_comics.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="/src/data/creators_in_comics_fetched.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="/src/data/event.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

@@ -1,7 +1,7 @@
 import pandas as pd
 import ast
-from helpers import save_file, create_in_memory_file, create_in_memory_csv
-from upload_to_s3 import upload_file
+from src.helpers import save_file, create_in_memory_file, create_in_memory_csv
+from src.upload_to_s3 import upload_file
 
 
 def extract_names(data_set: dict) -> list:

@@ -252,16 +252,16 @@ def get_table_data_as_dataframe(table):
         connection = engine.connect()
         df = pd.read_sql(query, connection)
 
-
+        print(df)
         return df
 
     except Exception as e:
         print(e)
     finally:
         connection.close()
+get_table_data_as_dataframe('characters')
 
-
-def test(table):
+def table_test(table):
     engine_1 = create_engine(URL(
         user=user,
         password=password,
@@ -283,7 +283,7 @@ def test(table):
         return total_rows
 
 def t():
-    tt = test('characters')
+    tt = table_test('characters')
     return tt
 
 

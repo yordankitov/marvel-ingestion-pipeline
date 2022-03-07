@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import ast
 from datetime import datetime
+from io import StringIO
 
 from src.comics import simplify_comics_data, simplify_comics_from_characters, simplify_comics_from_creators
 from src.events import simplify_events_data, simplify_events_from_characters
@@ -51,66 +52,89 @@ def ingest_entity(limit, offset, entity, order_by, modified):
 def extract_and_save_comics_data(limit, offset, order_by, modified=None):
     count = 0
     # offset = read_checkpoint()
+    main_output = StringIO()
+    outputs = list()
     while True:
         comics, another_request = ingest_entity(limit=limit, offset=offset, entity='comics',
                                                 order_by=order_by, modified=modified)
 
         comics_simplified = [simplify_comics_data(x) for x in comics['data']['results']]
-        store_to_csv(comics_simplified, 'comics')
+        csv_string_object = create_in_memory_csv(comics_simplified)
+        outputs.append(csv_string_object)
+        # LOCAL
+        # store_to_csv(comics_simplified, 'comics')
         print("request number", count)
         count += 1
         offset = offset + limit
         if not another_request:
             break
-
+    main_output.write(''.join([x for x in outputs]))
+    upload_file(
+        'data/comics/comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
+        main_output.getvalue())
 
 def extract_and_save_characters_data(limit, offset, order_by, modified=None):
     count = 0
-    offset = read_snowflake_checkpoint('characters')
+    # offset = read_snowflake_checkpoint('characters')
     print(offset)
-    # while True:
-    #     characters, another_request = ingest_entity(limit=limit, offset=offset, entity='characters', order_by=order_by, modified=modified)
-    #
-    #     characters_simplified = [simplify_character_data(x) for x in characters['data']['results']]
-    #     # store_to_csv(characters_simplified, 'characters')
-    #     csv_string_object = create_in_memory_csv(characters_simplified)
-    #
-    #     upload_file('data/characters/characters-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')), csv_string_object)
-    #     print("request number", count)
-    #     count += 1
-    #     offset = offset + limit
-    #     # if not another_request:
-    #     #     break
-    #     break
+    main_output = StringIO()
+    outputs = list()
+    while True:
+        characters, another_request = ingest_entity(limit=limit, offset=offset, entity='characters', order_by=order_by, modified=modified)
+        characters_simplified = [simplify_character_data(x) for x in characters['data']['results']]
+        csv_string_object = create_in_memory_csv(characters_simplified)
+        outputs.append(csv_string_object)
+        # LOCAL
+        # store_to_csv(characters_simplified, 'characters')
+        print("request number", count)
+        count += 1
+        offset = offset + limit
+        if not another_request:
+            break
+    main_output.write(''.join([x for x in outputs]))
+    upload_file(
+        'data/characters/characters-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
+        main_output.getvalue())
 # extract_and_save_characters_data(100, 0, 'modified')
 
 def extract_and_save_events_data(limit, offset, order_by, modified=None):
     count = 0
     # offset = read_checkpoint()
+    main_output = StringIO()
+    outputs = list()
     while True:
         events, another_request = ingest_entity(limit=limit, offset=offset, entity='events', order_by=order_by, modified=modified)
 
         events_simplified = [simplify_events_data(x) for x in events['data']['results']]
-        headers = events_simplified[0].keys()
 
-        csv_string_object = create_in_memory_csv(events_simplified, headers)
-        upload_file('test.csv', csv_string_object)
-        # store_to_csv(events_simplified, 'events')
+        csv_string_object = create_in_memory_csv(events_simplified)
+        outputs.append(csv_string_object)
+
+        # LOCAL
+        #store_to_csv(events_simplified, 'events')
 
         print("request number", count)
         count += 1
         offset = offset + limit
         if not another_request:
             break
-
+    main_output.write(''.join([x for x in outputs]))
+    upload_file(
+        'data/events/events-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
+        main_output.getvalue())
 
 def extract_and_save_creators_data(limit, offset, order_by, modified=None):
     count = 0
     # offset = read_checkpoint()
+    main_output = StringIO()
+    outputs = list()
     while True:
         creators, another_request = ingest_entity(limit=limit, offset=offset, entity='creators', order_by=order_by, modified=modified)
 
-        # creators_simplified = [simplify_creators_data(x) for x in creators['data']['results']]
+        creators_simplified = [simplify_creators_data(x) for x in creators['data']['results']]
+        csv_string_object = create_in_memory_csv(creators_simplified)
+        outputs.append(csv_string_object)
+        # LOCAL
         # store_to_csv(creators_simplified, 'creators')
         print("request number", count)
         count += 1
@@ -119,6 +143,10 @@ def extract_and_save_creators_data(limit, offset, order_by, modified=None):
         if not another_request:
             break
 
+    main_output.write(''.join([x for x in outputs]))
+    upload_file(
+        'data/creators/creators-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
+        main_output.getvalue())
 
 def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
     events_list = []
@@ -137,9 +165,9 @@ def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
 
             total_values = response.json()['data']['offset'] + response.json()['data']['count']
             if response.json()['data']['total'] == total_values:
-                offset = offset + limit
-            else:
                 break
+            else:
+                offset = offset + limit
 
     except requests.exceptions.HTTPError as errh:
         print("Http Error:", errh)
@@ -156,26 +184,35 @@ def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
 def extract_and_save_events_from_characters(limit):
     ids = ast.literal_eval(read_file("data/characters_ids_for_events_ingestion.txt"))
     http = retries_session()
-    checkpoint = read_checkpoint("../checkpoints/character_id_for_ingesting_events.txt")
-    start_index = None
-
-    if checkpoint:
-        try:
-            start_index = ids.index(int(checkpoint))
-        except ValueError:
-            print('id is not found')
-    else:
-        start_index = 0
-
+    # checkpoint = read_checkpoint("../checkpoints/character_id_for_ingesting_events.txt")
+    start_index = 0
+    csv_string_object = None
+    # if checkpoint:
+    #     try:
+    #         start_index = ids.index(int(checkpoint))
+    #     except ValueError:
+    #         print('id is not found')
+    # else:
+    #     start_index = 0
+    main_output = StringIO()
+    outputs = list()
     for char_id in ids[start_index:]:
         comics = ingest_events_from_characters(http=http, char_id=char_id, offset=0, limit=limit)
         if comics:
             events_from_characters_simplified = [simplify_events_from_characters(char_id, y) for x in comics for y in x]
-            store_to_csv(events_from_characters_simplified, 'characters_in_events_fetched')
-            save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_events.txt")
+            csv_string_object = create_in_memory_csv(events_from_characters_simplified)
+            outputs.append(csv_string_object)
+            # LOCAL
+            # store_to_csv(events_from_characters_simplified, 'characters_in_events_fetched')
+            # save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_events.txt")
         else:
             break
+    main_output.write(''.join([x for x in outputs]))
+    upload_file(
+        'data/characters-in-events/characters-in-events-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
+        main_output.getvalue())
 
+# extract_and_save_events_from_characters(100)
 
 def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=None):
     comics_list = []
@@ -214,39 +251,54 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
 def extract_and_save_comics_from_characters(limit):
     ids = ast.literal_eval(read_file("data/characters_ids_for_comics_ingestion-final.txt"))
     http = retries_session()
-    checkpoint = read_checkpoint("../checkpoints/character_id_for_ingesting_comics.txt")
+    # checkpoint = read_checkpoint("../checkpoints/character_id_for_ingesting_comics.txt")
     start_index = None
 
-    if checkpoint:
-        try:
-            start_index = ids.index(int(checkpoint))
-        except ValueError:
-            print('id is not found')
-    else:
-        start_index = 0
-
+    # if checkpoint:
+    #     try:
+    #         start_index = ids.index(int(checkpoint))
+    #     except ValueError:
+    #         print('id is not found')
+    # else:
+    #     start_index = 0
+    main_output = StringIO()
+    outputs = list()
     for char_id in ids[start_index:]:
 
         comics = ingest_comics_from_entity(http=http, entity_id=char_id, offset=0, limit=limit, entity='characters')
         if comics:
             comics_from_characters_simplified = [simplify_comics_from_characters(char_id, y) for x in comics for y in x]
-            store_to_csv(comics_from_characters_simplified, 'characters_in_comics-final')
-            save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_comics.txt")
+            csv_string_object = create_in_memory_csv(comics_from_characters_simplified)
+            outputs.append(csv_string_object)
+            # LOCAL
+            # store_to_csv(comics_from_characters_simplified, 'characters_in_comics-final')
+            # save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_comics.txt")
         else:
             break
-
+    main_output.write(''.join([x for x in outputs]))
+    upload_file(
+        'data/characters-in-comics/characters-in-comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
+        main_output.getvalue())
 
 def extract_and_save_comics_from_creators(limit):
     ids = ast.literal_eval(read_file("data/creator_ids_for_comics_ingestion.txt"))
     http = retries_session()
-    checkpoint = read_checkpoint("../checkpoints/creator_id_for_ingesting_comics.txt")
-    start_index = ids.index(checkpoint)
-    for creator_id in ids[start_index:]:
+    # checkpoint = read_checkpoint("../checkpoints/creator_id_for_ingesting_comics.txt")
+    # start_index = ids.index(checkpoint)
+    main_output = StringIO()
+    outputs = list()
+    for creator_id in ids[0:]:
         comics = ingest_comics_from_entity(http=http, entity_id=2053, offset=0, limit=limit, entity='creators')
         if comics:
             comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, y) for x in comics for y in x]
-            store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
-            save_checkpoint(creator_id, "../checkpoints/creator_id_for_ingesting_comics.txt")
+            csv_string_object = create_in_memory_csv(comics_from_creators_simplified)
+            outputs.append(csv_string_object)
+            # LOCAL
+            # store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
+            # save_checkpoint(creator_id, "../checkpoints/creator_id_for_ingesting_comics.txt")
         else:
             break
-
+    main_output.write(''.join([x for x in outputs]))
+    upload_file(
+        'data/creators-in-comics/creators-in-comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
+        main_output.getvalue())
