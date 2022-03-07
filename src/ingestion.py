@@ -73,6 +73,7 @@ def extract_and_save_comics_data(limit, offset, order_by, modified=None):
         'data/comics/comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())
 
+
 def extract_and_save_characters_data(limit, offset, order_by, modified=None):
     count = 0
     # offset = read_snowflake_checkpoint('characters')
@@ -95,7 +96,7 @@ def extract_and_save_characters_data(limit, offset, order_by, modified=None):
     upload_file(
         'data/characters/characters-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())
-# extract_and_save_characters_data(100, 0, 'modified')
+
 
 def extract_and_save_events_data(limit, offset, order_by, modified=None):
     count = 0
@@ -123,6 +124,7 @@ def extract_and_save_events_data(limit, offset, order_by, modified=None):
         'data/events/events-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())
 
+
 def extract_and_save_creators_data(limit, offset, order_by, modified=None):
     count = 0
     # offset = read_checkpoint()
@@ -147,6 +149,7 @@ def extract_and_save_creators_data(limit, offset, order_by, modified=None):
     upload_file(
         'data/creators/creators-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())
+
 
 def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
     events_list = []
@@ -279,6 +282,7 @@ def extract_and_save_comics_from_characters(limit):
     upload_file(
         'data/characters-in-comics/characters-in-comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())
+
 
 def extract_and_save_comics_from_creators(limit):
     ids = ast.literal_eval(read_file("data/creator_ids_for_comics_ingestion.txt"))

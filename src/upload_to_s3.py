@@ -1,11 +1,8 @@
 import boto3
-import io
-
-
-from io import StringIO
 
 client = boto3.client('s3')
 resource = boto3.resource('s3')
+
 
 def create_bucket(bucket_name):
     try:
@@ -18,7 +15,7 @@ def create_bucket(bucket_name):
 
     return bucket_response
 
-
+# LOCAL FILE
 # def upload_file(bucket_name, file_name):
 #     try:
 #         resource.Object(bucket_name, file_name).upload_file(Filename=file_name)
