@@ -226,11 +226,11 @@ def create_characters_view(db, schema):
 def create_comics_view(db, schema):
     comics_view = """create or replace view {db}.{schema}.comics_view as
                select COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, max(date_modified) as DATE_MODIFIED, ISBN, UPC, 
-               DIAMOND_CODE, EAN, ISSN, FORMAT, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_EVENTS
-               from {db}.{schema}.comics group by COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, max(date_modified) as DATE_MODIFIED, 
+               DIAMOND_CODE, EAN, ISSN, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_EVENTS
+               from {db}.{schema}.comics group by COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, DATE_MODIFIED, 
                ISBN, UPC, 
-               DIAMOND_CODE, EAN, ISSN, FORMAT, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES, AVAILABLE_CREATORS, 
-               AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS
+               DIAMOND_CODE, EAN, ISSN, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES, AVAILABLE_CREATORS, 
+               AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
            """.format(db=db, schema=schema)
 
     return comics_view
@@ -240,7 +240,7 @@ def create_creators_view(db, schema):
     creators_view = """create or replace view {db}.{schema}.creators_view as
                select CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, max(date_modified) as DATE_MODIFIED, AVAILABLE_COMICS,
                AVAILABLE_STORIES, AVAILABLE_SERIES, AVAILABLE_EVENTS
-               from {db}.{schema}.creators group by CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, max(date_modified) as DATE_MODIFIED, 
+               from {db}.{schema}.creators group by CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, DATE_MODIFIED, 
                AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_SERIES, FETCHED_SERIES, 
                LIST_OF_SERIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
            """.format(db=db, schema=schema)
@@ -248,11 +248,11 @@ def create_creators_view(db, schema):
     return creators_view
 
 
-def create_events_view(db,schema):
+def create_events_view(db, schema):
     events_view = """create or replace view {db}.{schema}.events_view as
                select EVENT_ID, TITLE, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_COMICS,
                AVAILABLE_SERIES
-               from {db}.{schema}.events group by EVENT_ID, TITLE, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_CREATORS,
+               from {db}.{schema}.events group by EVENT_ID, TITLE, DESCRIPTION, DATE_MODIFIED, AVAILABLE_CREATORS,
                FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_COMICS, FETCHED_COMICS, 
                LIST_OF_COMICS, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES;
                """.format(db=db, schema=schema)
@@ -270,8 +270,8 @@ def create_characters_in_comics_view(db, schema):
 
 def create_characters_in_events_view(db, schema):
     characters_in_events_view = """create or replace view {db}.{schema}.characters_in_events_view as
-                   select distinct CHARACTER_ID, EVENTS_NAME
-                   from {db}.{schema}.characters_in_events group by CHARACTER_ID, EVENTS_NAME""".format(db=db, schema=schema)
+                   select distinct CHARACTER_ID, EVENT_NAME
+                   from {db}.{schema}.characters_in_events group by CHARACTER_ID, EVENT_NAME""".format(db=db, schema=schema)
 
     return characters_in_events_view
 
