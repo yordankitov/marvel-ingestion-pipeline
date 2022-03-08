@@ -7,7 +7,7 @@ from src.events import simplify_events_data
 from src.characters import simplify_character_data
 from src.creators import simplify_creators_data
 from src.helpers import create_in_memory_csv, generate_url, retries_session
-from src.importing_to_snowflake import get_last_date_from_table
+from src.snowflake import get_last_date_from_table
 from src.upload_to_s3 import upload_file
 
 
@@ -30,7 +30,7 @@ def ingest_entity(limit, offset, entity, order_by, modified):
         print("total is ", response.json()['data']['count'])
 
         total_values = response.json()['data']['offset'] + response.json()['data']['count']
-        if response.json()['data']['total'] == total_values:
+        if response.json()['data']['total'] <= total_values:
             print('no data anymore')
             another_request = False
         else:
@@ -171,7 +171,7 @@ def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
             print(char_id, 'first call has ', len(response.json()['data']['results']))
 
             total_values = response.json()['data']['offset'] + response.json()['data']['count']
-            if response.json()['data']['total'] == total_values:
+            if response.json()['data']['total'] <= total_values:
                 break
             else:
                 offset = offset + limit
@@ -201,12 +201,9 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
             response = http.get(generate_url("{entity}/{id}/comics".format(entity=entity, id=entity_id), limit=limit),
                                 params={'orderBy': 'modified', 'offset': offset, 'modifiedSince': modified_since})
             comics_list.append(response.json()['data']['results'])
-            print(entity_id, 'first call has ', len(response.json()['data']['results']))
+            print(entity_id, 'api call has ', len(response.json()['data']['results']))
 
             total_values = response.json()['data']['offset'] + response.json()['data']['count']
-            print(total_values)
-            print('count', response.json()['data']['count'])
-            print('total', response.json()['data']['total'])
 
             if response.json()['data']['total'] <= total_values:
                 break

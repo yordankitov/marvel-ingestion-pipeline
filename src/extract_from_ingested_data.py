@@ -7,7 +7,7 @@ from src.comics import simplify_comics_from_characters, simplify_comics_from_cre
 from src.events import simplify_events_from_characters
 from src.helpers import retries_session, create_in_memory_file, create_in_memory_csv
 from src.upload_to_s3 import upload_file
-from src.importing_to_snowflake import get_table_data, get_last_id_from_table, read_table
+from src.snowflake import get_table_data, get_last_id_from_table
 from src.ingestion import ingest_comics_from_entity, ingest_events_from_characters
 
 

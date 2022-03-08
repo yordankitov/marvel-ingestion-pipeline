@@ -1,6 +1,6 @@
 from src.ingestion import extract_and_save_characters_data, extract_and_save_creators_data, extract_and_save_events_data, extract_and_save_comics_data
 from src.extract_from_ingested_data import extract_from_ingested_characters_events_data, extract_from_ingested_characters_comics_data, extract_from_ingested_creators_comics_data
-from src.importing_to_snowflake import *
+from src.snowflake import *
 
 # client = boto3.client('s3')
 user = os.getenv('SNOW_USER')

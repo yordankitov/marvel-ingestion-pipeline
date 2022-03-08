@@ -318,18 +318,18 @@ def snowflake_connection():
         print(e)
 
 
-def read_table(table):
-    con = snowflake_connection()
-    try:
-
-        data = con.cursor().execute('select max(date_modified) from {db}.{schema}.{table}'
-                                    .format(table=table, db=db, schema=schema)).fetchone()
-
-        return data[0]
-    except Exception as e:
-        print(e)
-    finally:
-        con.close()
+# def read_table(table):
+#     con = snowflake_connection()
+#     try:
+#
+#         data = con.cursor().execute('select max(date_modified) from {db}.{schema}.{table}'
+#                                     .format(table=table, db=db, schema=schema)).fetchone()
+#
+#         return data[0]
+#     except Exception as e:
+#         print(e)
+#     finally:
+#         con.close()
 
 def get_last_id_from_table(table, entity_id):
     con = snowflake_connection()
