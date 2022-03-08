@@ -107,25 +107,19 @@ def database_config(con, schema):
     );"""
 
     create_characters_comics_table = """create TABLE if not exists characters_in_comics (
-    	CHARACTER_ID VARCHAR NOT NULL,
-    	COMICS_NAME VARCHAR,
-    	foreign key (CHARACTER_ID) references characters (CHARACTER_ID),
-    	foreign key (COMICS_ID) references comics (COMICS_ID)
+    	CHARACTER_ID VARCHAR,
+    	COMICS_NAME VARCHAR
     	);"""
 
     create_characters_events_table = """create TABLE if not exists characters_in_events (
-      	CHARACTER_ID VARCHAR NOT NULL,
-      	EVENT_NAME VARCHAR,
-      	foreign key (CHARACTER_ID) references characters (CHARACTER_ID),
-      	foreign key (EVENT_ID) references events (EVENT_ID)
+      	CHARACTER_ID VARCHAR,
+      	EVENT_NAME VARCHAR
       	);"""
 
     create_creators_comics_table = """create TABLE if not exists creators_in_comics (
-      	CREATOR_ID VARCHAR NOT NULL,
-      	COMICS_NAME VARCHAR,
-      	foreign key (CREATOR_ID) references creators (CREATOR_ID),
-      	foreign key (COMICS_ID) references comics (COMICS_ID)
-      	);"""
+      	CREATOR_ID VARCHAR,
+      	COMICS_NAME VARCHAR
+        );"""
     try:
         con.cursor().execute(create_schema)
         con.cursor().execute(create_characters_table)
@@ -318,19 +312,6 @@ def snowflake_connection():
         print(e)
 
 
-# def read_table(table):
-#     con = snowflake_connection()
-#     try:
-#
-#         data = con.cursor().execute('select max(date_modified) from {db}.{schema}.{table}'
-#                                     .format(table=table, db=db, schema=schema)).fetchone()
-#
-#         return data[0]
-#     except Exception as e:
-#         print(e)
-#     finally:
-#         con.close()
-
 def get_last_id_from_table(table, entity_id):
     con = snowflake_connection()
     try:
@@ -360,6 +341,7 @@ def get_table_data(table, entity_id):
 
     return data
 
+
 def get_last_date_from_table(table, entity_id):
     con = snowflake_connection()
     data = 0
@@ -375,22 +357,16 @@ def get_last_date_from_table(table, entity_id):
 
     return data[0][0]
 
+
 def populate_db():
     """
     Main function that structures everything to be executed chronologically
-
-    :param:
-    :return:
     """
-    con = snowflake_connection()
+    with snowflake_connection() as con:
+        database_config(con, schema)
 
-    # database_config(con, schema)
-    #
-    # for entity in ['characters', 'creators', 'comics', 'events', 'characters_in_comics', 'characters_in_events', 'creators_in_comics']:
-    #     con.cursor().execute("truncate table {db}.{schema}.{entity}".format(db=db, schema=schema, entity=entity))
+        # for entity in ['characters', 'creators', 'comics', 'events', 'characters_in_comics', 'characters_in_events', 'creators_in_comics']:
+        #     con.cursor().execute("truncate table {db}.{schema}.{entity}".format(db=db, schema=schema, entity=entity))
 
-    create_s3_stages_for_snowflake(con, db, schema)
-    # copy_s3_stage_to_sf(con, db, schema, 'characters')
-
-    con.close()
+        create_s3_stages_for_snowflake(con, db, schema)
 

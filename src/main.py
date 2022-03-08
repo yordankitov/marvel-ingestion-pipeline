@@ -98,6 +98,7 @@ def copy_stage_to_sf(table):
 
 
 def main():
+    populate_db()
     characters()
     comics()
     events()
