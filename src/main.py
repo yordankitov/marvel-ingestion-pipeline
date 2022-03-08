@@ -1,6 +1,6 @@
 import boto3
 import os
-from src.ingestion import extract_and_save_characters_data, extract_and_save_creators_data, extract_and_save_events_data, extract_and_save_comics_data, extract_and_save_comics_from_creators, extract_and_save_comics_from_characters, extract_and_save_events_from_characters
+from src.ingestion import extract_and_save_characters_data, extract_and_save_creators_data, extract_and_save_events_data, extract_and_save_comics_data, extract_and_save_comics_from_creators, extract_and_save_events_from_characters
 from src.extract_from_ingested_data import check_returned_data_entity
 from src.upload_to_s3 import create_bucket
 from src.helpers import check_entity_last_update
@@ -16,13 +16,44 @@ role = os.getenv('ROLE')
 wh = os.getenv('WH')
 
 
+def characters():
+    try:
+        extract_and_save_characters_data(limit=100, offset=0, order_by='modified', modified=read_table('characters'))
+        copy_stage_to_sf('characters')
+        with snowflake_connection() as con:
+            con.cursor().execute(create_characters_view(db, schema))
+    except Exception as e:
+        print(e)
 
 
-def ingestion():
-    extract_and_save_characters_data(limit=100, offset=0, order_by='modified', modified=read_table('characters'))
-    # extract_and_save_creators_data(limit=100, offset=0, order_by='modified', modified=read_table('creators'))
-    # extract_and_save_comics_data(limit=100, offset=0, order_by='modified', modified=read_table('comics'))
-    # extract_and_save_events_data(limit=100, offset=0, order_by='modified', modified=read_table('events'))
+def comics():
+    try:
+        extract_and_save_comics_data(limit=100, offset=0, order_by='modified', modified=read_table('comics'))
+        copy_stage_to_sf('comics')
+        with snowflake_connection() as con:
+            con.cursor().execute(create_comics_view(db, schema))
+    except Exception as e:
+        print(e)
+
+
+def creators():
+    try:
+        extract_and_save_creators_data(limit=100, offset=0, order_by='modified', modified=read_table('creators'))
+        copy_stage_to_sf('creators')
+        with snowflake_connection() as con:
+            con.cursor().execute(create_creators_view(db, schema))
+    except Exception as e:
+        print(e)
+
+
+def events():
+    try:
+        extract_and_save_events_data(limit=100, offset=0, order_by='modified', modified=read_table('events'))
+        copy_stage_to_sf('events')
+        with snowflake_connection() as con:
+            con.cursor().execute(create_events_view(db, schema))
+    except Exception as e:
+        print(e)
 
 
 def extraction_of_sub_entities_from_ingested_entities():
@@ -33,7 +64,7 @@ def extraction_of_sub_entities_from_ingested_entities():
 
 def ingestion_of_sub_entities():
     extract_and_save_events_from_characters(100)
-    extract_and_save_comics_from_characters(100)
+    # extract_and_save_comics_from_characters(100)
     extract_and_save_comics_from_creators(100)
 
 
@@ -41,7 +72,7 @@ def upload_to_aws_s3():
     bucket = create_bucket('il-tapde-final-exercise-yordan')
     print(bucket)
 
-def copy_stages_to_sf(table):
+def copy_stage_to_sf(table):
     try:
         with snowflake_connection() as con:
             copy_s3_stage_to_sf(con, db, schema, table)
@@ -63,7 +94,7 @@ def create_views_on_sf():
 
 
 def main():
-    ingestion()
+
     extraction_of_sub_entities_from_ingested_entities()
     ingestion_of_sub_entities()
 
@@ -71,5 +102,5 @@ def main():
 if __name__ == '__main__':
 
     # ingestion()
-    # copy_stages_to_sf('characters_in_events')
-    create_views_on_sf()
+    copy_stage_to_sf('characters_in_events')
+    # create_views_on_sf()

@@ -331,6 +331,49 @@ def read_table(table):
     finally:
         con.close()
 
+def get_last_id_from_table(table, entity_id):
+    con = snowflake_connection()
+    try:
+
+        data = con.cursor().execute('select * from {db}.{schema}.{table} order by {entity_id} desc;'
+                                    .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
+
+        return data[0][0]
+    except Exception as e:
+        print(e)
+    finally:
+        con.close()
+
+
+def get_table_data(table, entity_id):
+    con = snowflake_connection()
+    data = 0
+    try:
+
+        data = con.cursor().execute('select * from {db}.{schema}.{table} order by {entity_id} asc'
+                                    .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
+
+    except Exception as e:
+        print(e)
+    finally:
+        con.close()
+
+    return data
+
+def get_last_date_from_table(table, entity_id):
+    con = snowflake_connection()
+    data = 0
+    try:
+
+        data = con.cursor().execute('select max(date_modified) from {db}.{schema}.{table}'
+                                    .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
+
+    except Exception as e:
+        print(e)
+    finally:
+        con.close()
+
+    return data[0][0]
 
 def populate_db():
     """

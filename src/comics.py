@@ -12,7 +12,7 @@ def simplify_comics_data(comics):
                       'issn': comics.get('issn', None),
                       'format': comics.get('format', None),
                       'page_count': comics.get('pageCount'),
-                      'print_price': comics.get('price', None)[0].get('price'),
+                      'print_price': comics.get('prices', None)[0].get('price'),
                       'available_series': comics.get('series').get('available'),
                       'fetched_series': comics.get('series').get('returned'),
                       'list_of_series': comics.get('series').get('items'),

@@ -9,6 +9,7 @@ from src.events import simplify_events_data, simplify_events_from_characters
 from src.characters import simplify_character_data
 from src.creators import simplify_creators_data
 from src.helpers import create_in_memory_csv, generate_url, retries_session, read_file, save_checkpoint, read_snowflake_checkpoint, store_to_csv
+from src.importing_to_snowflake import get_table_data, get_last_date_from_table
 from src.upload_to_s3 import upload_file
 
 
@@ -49,9 +50,11 @@ def ingest_entity(limit, offset, entity, order_by, modified):
     return response.json(), another_request
 
 
-def extract_and_save_comics_data(limit, offset, order_by, modified=None):
+def extract_and_save_comics_data(limit, offset, order_by):
     count = 0
-    # offset = read_checkpoint()
+    modified = get_last_date_from_table('comics', 'comics_id')
+    print(modified)
+
     main_output = StringIO()
     outputs = list()
     while True:
@@ -74,10 +77,10 @@ def extract_and_save_comics_data(limit, offset, order_by, modified=None):
         main_output.getvalue())
 
 
-def extract_and_save_characters_data(limit, offset, order_by, modified=None):
+def extract_and_save_characters_data(limit, offset, order_by):
     count = 0
-    # offset = read_snowflake_checkpoint('characters')
-    print(offset)
+    modified = get_last_date_from_table('characters', 'character_id')
+    print(modified)
     main_output = StringIO()
     outputs = list()
     while True:
@@ -98,9 +101,10 @@ def extract_and_save_characters_data(limit, offset, order_by, modified=None):
         main_output.getvalue())
 
 
-def extract_and_save_events_data(limit, offset, order_by, modified=None):
+def extract_and_save_events_data(limit, offset, order_by):
     count = 0
-    # offset = read_checkpoint()
+    modified = get_last_date_from_table('events', 'event_id')
+    print(modified)
     main_output = StringIO()
     outputs = list()
     while True:
@@ -125,9 +129,10 @@ def extract_and_save_events_data(limit, offset, order_by, modified=None):
         main_output.getvalue())
 
 
-def extract_and_save_creators_data(limit, offset, order_by, modified=None):
+def extract_and_save_creators_data(limit, offset, order_by):
     count = 0
-    # offset = read_checkpoint()
+    modified = get_last_date_from_table('events', 'event_id')
+    print(modified)
     main_output = StringIO()
     outputs = list()
     while True:
@@ -150,6 +155,7 @@ def extract_and_save_creators_data(limit, offset, order_by, modified=None):
         'data/creators/creators-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())
 
+extract_and_save_creators_data(100, 0, 'modified')
 
 def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
     events_list = []
@@ -233,8 +239,11 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
             print(entity_id, 'first call has ', len(response.json()['data']['results']))
 
             total_values = response.json()['data']['offset'] + response.json()['data']['count']
+            print(total_values)
+            print('count', response.json()['data']['count'])
+            print('total', response.json()['data']['total'])
 
-            if response.json()['data']['total'] == total_values:
+            if response.json()['data']['total'] <= total_values:
                 break
             else:
                 offset = offset + limit
@@ -250,59 +259,3 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
 
     return comics_list
 
-
-def extract_and_save_comics_from_characters(limit):
-    ids = ast.literal_eval(read_file("data/characters_ids_for_comics_ingestion-final.txt"))
-    http = retries_session()
-    # checkpoint = read_checkpoint("../checkpoints/character_id_for_ingesting_comics.txt")
-    start_index = None
-
-    # if checkpoint:
-    #     try:
-    #         start_index = ids.index(int(checkpoint))
-    #     except ValueError:
-    #         print('id is not found')
-    # else:
-    #     start_index = 0
-    main_output = StringIO()
-    outputs = list()
-    for char_id in ids[start_index:]:
-
-        comics = ingest_comics_from_entity(http=http, entity_id=char_id, offset=0, limit=limit, entity='characters')
-        if comics:
-            comics_from_characters_simplified = [simplify_comics_from_characters(char_id, y) for x in comics for y in x]
-            csv_string_object = create_in_memory_csv(comics_from_characters_simplified)
-            outputs.append(csv_string_object)
-            # LOCAL
-            # store_to_csv(comics_from_characters_simplified, 'characters_in_comics-final')
-            # save_checkpoint(char_id, "../checkpoints/character_id_for_ingesting_comics.txt")
-        else:
-            break
-    main_output.write(''.join([x for x in outputs]))
-    upload_file(
-        'data/characters-in-comics/characters-in-comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
-        main_output.getvalue())
-
-
-def extract_and_save_comics_from_creators(limit):
-    ids = ast.literal_eval(read_file("data/creator_ids_for_comics_ingestion.txt"))
-    http = retries_session()
-    # checkpoint = read_checkpoint("../checkpoints/creator_id_for_ingesting_comics.txt")
-    # start_index = ids.index(checkpoint)
-    main_output = StringIO()
-    outputs = list()
-    for creator_id in ids[0:]:
-        comics = ingest_comics_from_entity(http=http, entity_id=2053, offset=0, limit=limit, entity='creators')
-        if comics:
-            comics_from_creators_simplified = [simplify_comics_from_creators(creator_id, y) for x in comics for y in x]
-            csv_string_object = create_in_memory_csv(comics_from_creators_simplified)
-            outputs.append(csv_string_object)
-            # LOCAL
-            # store_to_csv(comics_from_creators_simplified, 'creators_in_comics_fetched')
-            # save_checkpoint(creator_id, "../checkpoints/creator_id_for_ingesting_comics.txt")
-        else:
-            break
-    main_output.write(''.join([x for x in outputs]))
-    upload_file(
-        'data/creators-in-comics/creators-in-comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
-        main_output.getvalue())

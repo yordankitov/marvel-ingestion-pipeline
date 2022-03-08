@@ -78,14 +78,15 @@ def check_entity_last_update(entity):
 
 
 def generate_url(enitity, limit):
-    ts = datetime.now()
-    ts = str(ts).replace(' ', '_')
-    return BASE_URL.format(type=enitity, time_stamp=ts, limit=limit, api_key=os.environ['API_KEY'],
+    # ts = datetime.now()
+    # ts = str(ts).replace(' ', '_')
+    ts = 1
+    return BASE_URL.format(type=enitity, time_stamp=ts, limit=limit, api_key=os.environ['API_KEY2'],
                            hash=create_hash_for_login(ts))
 
 
 def create_hash_for_login(ts):
-    keys = str(os.environ['PRIVATE_KEY'] + os.environ['API_KEY'])
+    keys = str(os.environ['PRIVATE_KEY2'] + os.environ['API_KEY2'])
     hashed = hashlib.md5(str(ts).encode() + keys.encode())
 
     return hashed.hexdigest()
