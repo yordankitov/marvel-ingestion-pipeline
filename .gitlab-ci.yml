@@ -1,6 +1,7 @@
 image: python:3.9.9
 
 stages:
+  - run
   - lint
 
 before_script:
@@ -8,6 +9,13 @@ before_script:
   - poetry config virtualenvs.create false
   - poetry install
 
+Run On Dev:
+  stage: run
+  script:
+    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
+      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2 python -m src.main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
 
 Python Code Lint:
   stage: lint
