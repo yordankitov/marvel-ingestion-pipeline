@@ -12,15 +12,17 @@ boto3 = "^1.21.11"
 pandas = "^1.4.1"
 pyarrow = "6.0.0"
 
+
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.1"
 mockito = "^1.3.0"
 poethepoet = "^0.13.1"
 responses = "^0.19.0"
+pytest-cov = "^3.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poe.tasks]
-export_requirements = { shell = "poetry export -f requirements.txt --output build/requirements.txt" }
+export_requirements = { shell = "poetry export -f requirements.txt --output requirements.txt" }
