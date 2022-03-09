@@ -11,7 +11,8 @@ RUN poe export_requirements
 
 RUN ls
 RUN pwd
-#COPY requirements.txt requirements.txt
+RUN find -name 'requirements.txt'
+COPY /requirements.txt requirements.txt
 #RUN pip install -r requirements.txt
 
 #CMD ["python", "../src/main.py"]
