@@ -2,6 +2,8 @@ image: python:3.9.9
 
 stages:
   - run
+  - test
+  - lint
   - build
 
 
@@ -11,20 +13,27 @@ before_script:
   - poetry install
   - poe export_requirements
 
-#Run On Dev:
-#  stage: run
-#  script:
-#    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
-#      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2
-#      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
-#      python -m src.main
-#  rules:
-#    - if: '$CI_COMMIT_BRANCH == "dev"'
+Testing:
+  stage: test
+  script:
+    - poetry run pytest
+  rules:
+    - allow_failure: true
 
-#Python Code Lint:
-#  stage: lint
-#  script:
-#    - poetry run black . --check
+Run On Dev:
+  stage: run
+  script:
+    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
+      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2
+      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      python -m src.main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+
+Python Code Lint:
+  stage: lint
+  script:
+    - poetry run black . --check
 
 Docker Build:
   image: docker
