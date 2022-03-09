@@ -1,0 +1,22 @@
+image: python:3.9.9
+
+stages:
+  - lint
+
+before_script:
+  - pip install poetry
+  - poetry config virtualenvs.create false
+  - poetry install
+
+Testing:
+  stage: test
+  script:
+    - poetry run pytest
+  rules:
+    - allow_failure: true
+
+
+Python Code Lint:
+  stage: lint
+  script:
+    - poetry run black . --check
