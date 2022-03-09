@@ -2,7 +2,7 @@ image: python:3.9.9
 
 stages:
   - run
-  - lint
+
 
 before_script:
   - pip install poetry
@@ -13,7 +13,9 @@ Run On Dev:
   stage: run
   script:
     - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
-      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2 python -m src.main
+      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2 
+      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      python -m src.main
   rules:
     - if: '$CI_COMMIT_BRANCH == "dev"'
 
