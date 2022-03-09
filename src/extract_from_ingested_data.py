@@ -6,7 +6,7 @@ from datetime import datetime
 from src.comics import simplify_comics_from_characters, simplify_comics_from_creators
 from src.events import simplify_events_from_characters
 from src.helpers import retries_session, create_in_memory_file, create_in_memory_csv
-from src.upload_to_s3 import upload_file
+from src.aws_s3 import upload_file
 from src.snowflake import get_table_data, get_last_id_from_table
 from src.ingestion import ingest_comics_from_entity, ingest_events_from_characters
 
@@ -124,7 +124,6 @@ def extract_from_ingested_characters_comics_data(limit):
             outputs.append(data_row)
 
     main_output.write(''.join([x for x in outputs]))
-    # print(main_output.getvalue())
     upload_file(
         'data/characters-in-comics/characters-in-comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())
@@ -162,7 +161,6 @@ def extract_from_ingested_characters_events_data(limit):
             outputs.append(data_row)
 
     main_output.write(''.join([x for x in outputs]))
-    print(main_output.getvalue())
     upload_file(
         'data/characters-in-events/characters-in-events-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())
@@ -199,7 +197,6 @@ def extract_from_ingested_creators_comics_data(limit):
             outputs.append(data_row)
 
     main_output.write(''.join([x for x in outputs]))
-    # print(main_output.getvalue())
     upload_file(
         'data/creators-in-comics/creators-in-comics-{date}.csv'.format(date=str(datetime.now()).replace(' ', '-')),
         main_output.getvalue())

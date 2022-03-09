@@ -209,7 +209,8 @@ def create_s3_stages_for_snowflake(con, db, schema):
 
 def create_characters_view(db, schema):
     characters_view = """create or replace view {db}.{schema}.characters_view as
-                select CHARACTER_ID, NAME, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_COMICS, AVAILABLE_EVENTS
+                select CHARACTER_ID, NAME, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, 
+                AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS
                 from {db}.{schema}.characters group by CHARACTER_ID, NAME, DESCRIPTION, AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, 
                 AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
         """.format(db=db, schema=schema)
@@ -219,12 +220,14 @@ def create_characters_view(db, schema):
 
 def create_comics_view(db, schema):
     comics_view = """create or replace view {db}.{schema}.comics_view as
-               select COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, max(date_modified) as DATE_MODIFIED, ISBN, UPC, 
-               DIAMOND_CODE, EAN, ISSN, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_EVENTS
+               select COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, max(date_modified) as DATE_MODIFIED, 
+               ISBN, UPC, 
+               DIAMOND_CODE, EAN, ISSN, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES, AVAILABLE_CREATORS, 
+               FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS
                from {db}.{schema}.comics group by COMICS_ID, DIGITAL_ID, TITLE, VARIANT_DESCRIPTION, DESCRIPTION, DATE_MODIFIED, 
                ISBN, UPC, 
                DIAMOND_CODE, EAN, ISSN, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES, AVAILABLE_CREATORS, 
-               AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
+               FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
            """.format(db=db, schema=schema)
 
     return comics_view
@@ -232,8 +235,10 @@ def create_comics_view(db, schema):
 
 def create_creators_view(db, schema):
     creators_view = """create or replace view {db}.{schema}.creators_view as
-               select CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, max(date_modified) as DATE_MODIFIED, AVAILABLE_COMICS,
-               AVAILABLE_STORIES, AVAILABLE_SERIES, AVAILABLE_EVENTS
+               select CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, max(date_modified) as DATE_MODIFIED, 
+               AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_SERIES, FETCHED_SERIES, 
+               LIST_OF_SERIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS
+               
                from {db}.{schema}.creators group by CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, DATE_MODIFIED, 
                AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_SERIES, FETCHED_SERIES, 
                LIST_OF_SERIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
@@ -244,8 +249,9 @@ def create_creators_view(db, schema):
 
 def create_events_view(db, schema):
     events_view = """create or replace view {db}.{schema}.events_view as
-               select EVENT_ID, TITLE, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_CREATORS, AVAILABLE_STORIES, AVAILABLE_COMICS,
-               AVAILABLE_SERIES
+               select EVENT_ID, TITLE, DESCRIPTION, max(date_modified) as DATE_MODIFIED, AVAILABLE_CREATORS,
+               FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_COMICS, FETCHED_COMICS, 
+               LIST_OF_COMICS, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES
                from {db}.{schema}.events group by EVENT_ID, TITLE, DESCRIPTION, DATE_MODIFIED, AVAILABLE_CREATORS,
                FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_COMICS, FETCHED_COMICS, 
                LIST_OF_COMICS, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES;
@@ -316,7 +322,7 @@ def get_last_id_from_table(table, entity_id):
     con = snowflake_connection()
     try:
 
-        data = con.cursor().execute('select * from {db}.{schema}.{table} order by {entity_id} desc;'
+        data = con.cursor().execute('select * from {db}.{schema}.{table}_view order by {entity_id} desc;'
                                     .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
 
         return data[0][0]
@@ -331,7 +337,7 @@ def get_table_data(table, entity_id):
     data = 0
     try:
 
-        data = con.cursor().execute('select * from {db}.{schema}.{table} order by {entity_id} asc'
+        data = con.cursor().execute('select * from {db}.{schema}.{table}_view order by {entity_id} asc'
                                     .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
 
     except Exception as e:
@@ -347,7 +353,7 @@ def get_last_date_from_table(table, entity_id):
     data = 0
     try:
 
-        data = con.cursor().execute('select max(date_modified) from {db}.{schema}.{table}'
+        data = con.cursor().execute('select max(date_modified) from {db}.{schema}.{table}_view'
                                     .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
 
     except Exception as e:

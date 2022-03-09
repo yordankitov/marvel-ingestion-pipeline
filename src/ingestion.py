@@ -8,7 +8,7 @@ from src.characters import simplify_character_data
 from src.creators import simplify_creators_data
 from src.helpers import create_in_memory_csv, generate_url, retries_session
 from src.snowflake import get_last_date_from_table
-from src.upload_to_s3 import upload_file
+from src.aws_s3 import upload_file
 
 
 def ingest_entity(limit, offset, entity, order_by, modified):
