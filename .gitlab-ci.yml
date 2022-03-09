@@ -19,7 +19,7 @@ Run On Dev:
   rules:
     - if: '$CI_COMMIT_BRANCH == "dev"'
 
-Python Code Lint:
-  stage: lint
-  script:
-    - poetry run black . --check
+#Python Code Lint:
+#  stage: lint
+#  script:
+#    - poetry run black . --check
