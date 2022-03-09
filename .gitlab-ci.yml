@@ -20,6 +20,13 @@ Testing:
   rules:
     - allow_failure: true
 
+Code Coverage:
+  stage: test
+  script:
+    - poetry run pytest --cov --cov-fail-under=80
+  only:
+    - merge_requests
+
 Run On Dev:
   stage: run
   script:
