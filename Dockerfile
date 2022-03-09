@@ -9,10 +9,10 @@ RUN poetry config virtualenvs.create false
 RUN poetry install
 RUN poe export_requirements
 
-RUN ls
-RUN pwd
-RUN find -name 'requirements.txt'
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+#RUN ls
+#RUN pwd
+#RUN find -name 'requirements.txt'
+COPY reqs.txt reqs.txt
+RUN pip install -r reqs.txt
 
 #CMD ["python", "../src/main.py"]
