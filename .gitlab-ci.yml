@@ -8,13 +8,6 @@ before_script:
   - poetry config virtualenvs.create false
   - poetry install
 
-Testing:
-  stage: test
-  script:
-    - poetry run pytest
-  rules:
-    - allow_failure: true
-
 
 Python Code Lint:
   stage: lint
