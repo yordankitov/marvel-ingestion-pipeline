@@ -1,13 +1,13 @@
 import snowflake.connector
 import os
 
-user = os.getenv('SNOW_USER')
-password = os.getenv('SNOW_PASS')
-db = os.getenv('DB')
-account = os.getenv('ACCOUNT')
-schema = os.getenv('SCHEMA')
-role = os.getenv('ROLE')
-wh = os.getenv('WH')
+user = os.getenv("SNOW_USER")
+password = os.getenv("SNOW_PASS")
+db = os.getenv("DB")
+account = os.getenv("ACCOUNT")
+schema = os.getenv("SCHEMA")
+role = os.getenv("ROLE")
+wh = os.getenv("WH")
 
 
 def database_config(con, schema):
@@ -148,49 +148,65 @@ def create_s3_stages_for_snowflake(con, db, schema):
           null_if = ('NULL', 'null')
           empty_field_as_null = true
           error_on_column_count_mismatch = false
-          field_optionally_enclosed_by = '"';""".format(db=db, schema=schema)
+          field_optionally_enclosed_by = '"';""".format(
+        db=db, schema=schema
+    )
 
     create_stage_characters = """ 
         create or replace stage {db}.{schema}.characters_stage
         URL = 's3://il-tapde-final-exercise-yordan/data/characters/'
         storage_integration = s3_integration_yordan
-        file_format = {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema)
+        file_format = {db}.{schema}.csv_format_yordan;""".format(
+        db=db, schema=schema
+    )
 
     create_stage_comics = """ 
             create or replace stage {db}.{schema}.comics_stage
             URL = 's3://il-tapde-final-exercise-yordan/data/comics/'
             storage_integration = s3_integration_yordan
-            file_format = {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema)
+            file_format = {db}.{schema}.csv_format_yordan;""".format(
+        db=db, schema=schema
+    )
 
     create_stage_creators = """ 
             create or replace stage {db}.{schema}.creators_stage
             URL = 's3://il-tapde-final-exercise-yordan/data/creators/'
             storage_integration = s3_integration_yordan
-            file_format = {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema)
+            file_format = {db}.{schema}.csv_format_yordan;""".format(
+        db=db, schema=schema
+    )
 
     create_stage_events = """ 
             create or replace stage {db}.{schema}.events_stage
             URL = 's3://il-tapde-final-exercise-yordan/data/events/'
             storage_integration = s3_integration_yordan
-            file_format = {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema)
+            file_format = {db}.{schema}.csv_format_yordan;""".format(
+        db=db, schema=schema
+    )
 
     create_stage_characters_in_comics = """ 
             create or replace stage {db}.{schema}.characters_in_comics_stage
             URL = 's3://il-tapde-final-exercise-yordan/data/characters-in-comics/'
             storage_integration = s3_integration_yordan
-            file_format = {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema)
+            file_format = {db}.{schema}.csv_format_yordan;""".format(
+        db=db, schema=schema
+    )
 
     create_stage_characters_in_events = """ 
                 create or replace stage {db}.{schema}.characters_in_events_stage
                 URL = 's3://il-tapde-final-exercise-yordan/data/characters-in-events/'
                 storage_integration = s3_integration_yordan
-                file_format = {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema)
+                file_format = {db}.{schema}.csv_format_yordan;""".format(
+        db=db, schema=schema
+    )
 
     create_stage_creators_in_comics = """ 
                 create or replace stage {db}.{schema}.creators_in_comics_stage
                 URL = 's3://il-tapde-final-exercise-yordan/data/creators-in-comics/'
                 storage_integration = s3_integration_yordan
-                file_format = {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema)
+                file_format = {db}.{schema}.csv_format_yordan;""".format(
+        db=db, schema=schema
+    )
 
     try:
         con.cursor().execute(create_storage_integration)
@@ -213,7 +229,9 @@ def create_characters_view(db, schema):
                 AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS
                 from {db}.{schema}.characters group by CHARACTER_ID, NAME, DESCRIPTION, AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, 
                 AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
-        """.format(db=db, schema=schema)
+        """.format(
+        db=db, schema=schema
+    )
 
     return characters_view
 
@@ -228,7 +246,9 @@ def create_comics_view(db, schema):
                ISBN, UPC, 
                DIAMOND_CODE, EAN, ISSN, PAGE_COUNT, PRINT_PRICE, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES, AVAILABLE_CREATORS, 
                FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
-           """.format(db=db, schema=schema)
+           """.format(
+        db=db, schema=schema
+    )
 
     return comics_view
 
@@ -242,7 +262,9 @@ def create_creators_view(db, schema):
                from {db}.{schema}.creators group by CREATOR_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, SUFFIX, FULL_NAME, DATE_MODIFIED, 
                AVAILABLE_COMICS, FETCHED_COMICS, LIST_OF_COMICS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_SERIES, FETCHED_SERIES, 
                LIST_OF_SERIES, AVAILABLE_EVENTS, FETCHED_EVENTS, LIST_OF_EVENTS;
-           """.format(db=db, schema=schema)
+           """.format(
+        db=db, schema=schema
+    )
 
     return creators_view
 
@@ -255,7 +277,9 @@ def create_events_view(db, schema):
                from {db}.{schema}.events group by EVENT_ID, TITLE, DESCRIPTION, DATE_MODIFIED, AVAILABLE_CREATORS,
                FETCHED_CREATORS, LIST_OF_CREATORS, AVAILABLE_STORIES, FETCHED_STORIES, LIST_OF_STORIES, AVAILABLE_COMICS, FETCHED_COMICS, 
                LIST_OF_COMICS, AVAILABLE_SERIES, FETCHED_SERIES, LIST_OF_SERIES;
-               """.format(db=db, schema=schema)
+               """.format(
+        db=db, schema=schema
+    )
 
     return events_view
 
@@ -263,7 +287,9 @@ def create_events_view(db, schema):
 def create_characters_in_comics_view(db, schema):
     characters_in_comics_view = """create or replace view {db}.{schema}.characters_in_comics_view as
                select distinct CHARACTER_ID, COMICS_NAME
-               from {db}.{schema}.characters_in_comics group by CHARACTER_ID, COMICS_NAME""".format(db=db, schema=schema)
+               from {db}.{schema}.characters_in_comics group by CHARACTER_ID, COMICS_NAME""".format(
+        db=db, schema=schema
+    )
 
     return characters_in_comics_view
 
@@ -271,7 +297,9 @@ def create_characters_in_comics_view(db, schema):
 def create_characters_in_events_view(db, schema):
     characters_in_events_view = """create or replace view {db}.{schema}.characters_in_events_view as
                    select distinct CHARACTER_ID, EVENT_NAME
-                   from {db}.{schema}.characters_in_events group by CHARACTER_ID, EVENT_NAME""".format(db=db, schema=schema)
+                   from {db}.{schema}.characters_in_events group by CHARACTER_ID, EVENT_NAME""".format(
+        db=db, schema=schema
+    )
 
     return characters_in_events_view
 
@@ -279,7 +307,9 @@ def create_characters_in_events_view(db, schema):
 def create_creators_in_comics_view(db, schema):
     creators_in_comics_view = """create or replace view {db}.{schema}.creators_in_comics_view as
                   select distinct CREATOR_ID, COMICS_NAME
-                  from {db}.{schema}.creators_in_comics group by CREATOR_ID, COMICS_NAME""".format(db=db, schema=schema)
+                  from {db}.{schema}.creators_in_comics group by CREATOR_ID, COMICS_NAME""".format(
+        db=db, schema=schema
+    )
 
     return creators_in_comics_view
 
@@ -287,7 +317,9 @@ def create_creators_in_comics_view(db, schema):
 def copy_s3_stage_to_sf(con, db, schema, entity):
     copy_data = """ copy into {db}.{schema}.{entity}
             from @{db}.{schema}.{entity}_stage
-            file_format= {db}.{schema}.csv_format_yordan;""".format(db=db, schema=schema, entity=entity)
+            file_format= {db}.{schema}.csv_format_yordan;""".format(
+        db=db, schema=schema, entity=entity
+    )
 
     try:
         con.cursor().execute(copy_data)
@@ -311,7 +343,7 @@ def snowflake_connection():
             database=db,
             schema=schema,
             role=role,
-            wharehouse=wh
+            wharehouse=wh,
         )
         return con
     except Exception as e:
@@ -322,8 +354,15 @@ def get_last_id_from_table(table, entity_id):
     con = snowflake_connection()
     try:
 
-        data = con.cursor().execute('select * from {db}.{schema}.{table}_view order by {entity_id} desc;'
-                                    .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
+        data = (
+            con.cursor()
+            .execute(
+                "select * from {db}.{schema}.{table}_view order by {entity_id} desc;".format(
+                    table=table, db=db, schema=schema, entity_id=entity_id
+                )
+            )
+            .fetchall()
+        )
 
         return data[0][0]
     except Exception as e:
@@ -337,8 +376,15 @@ def get_table_data(table, entity_id):
     data = 0
     try:
 
-        data = con.cursor().execute('select * from {db}.{schema}.{table}_view order by {entity_id} asc'
-                                    .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
+        data = (
+            con.cursor()
+            .execute(
+                "select * from {db}.{schema}.{table}_view order by {entity_id} asc".format(
+                    table=table, db=db, schema=schema, entity_id=entity_id
+                )
+            )
+            .fetchall()
+        )
 
     except Exception as e:
         print(e)
@@ -353,8 +399,15 @@ def get_last_date_from_table(table, entity_id):
     data = 0
     try:
 
-        data = con.cursor().execute('select max(date_modified) from {db}.{schema}.{table}_view'
-                                    .format(table=table, db=db, schema=schema, entity_id=entity_id)).fetchall()
+        data = (
+            con.cursor()
+            .execute(
+                "select max(date_modified) from {db}.{schema}.{table}_view".format(
+                    table=table, db=db, schema=schema, entity_id=entity_id
+                )
+            )
+            .fetchall()
+        )
 
     except Exception as e:
         print(e)
@@ -375,4 +428,3 @@ def populate_db():
         #     con.cursor().execute("truncate table {db}.{schema}.{entity}".format(db=db, schema=schema, entity=entity))
 
         create_s3_stages_for_snowflake(con, db, schema)
-

@@ -39,7 +39,9 @@ def store_to_csv(data, entity_type):
         print("ERROR ENCOUNTERED WHILE EXTRACTING THE HEADERS: ")
         print(e)
     try:
-        with open('data/{type}.csv'.format(type=entity_type), 'a', encoding='utf8', newline='') as output_file:
+        with open(
+            "data/{type}.csv".format(type=entity_type), "a", encoding="utf8", newline=""
+        ) as output_file:
             fc = csv.DictWriter(output_file, fieldnames=headers)
             # fc.writeheader()
             fc.writerows(data)
@@ -61,11 +63,9 @@ def read_local_checkpoint(file_path):
         return 0
 
 
-
-
 def check_entity_last_update(entity):
-    df = pd.read_csv(f'data/{entity}.csv'.format(enitity=entity))
-    last_date = df['date_modified'].max()
+    df = pd.read_csv(f"data/{entity}.csv".format(enitity=entity))
+    last_date = df["date_modified"].max()
 
     return last_date
 
@@ -74,12 +74,17 @@ def generate_url(entity, limit):
     # ts = datetime.now()
     # ts = str(ts).replace(' ', '_')
     ts = 1
-    return BASE_URL.format(type=entity, time_stamp=ts, limit=limit, api_key=os.environ['API_KEY2'],
-                           hash=create_hash_for_login(ts))
+    return BASE_URL.format(
+        type=entity,
+        time_stamp=ts,
+        limit=limit,
+        api_key=os.environ["API_KEY2"],
+        hash=create_hash_for_login(ts),
+    )
 
 
 def create_hash_for_login(ts):
-    keys = str(os.environ['PRIVATE_KEY2'] + os.environ['API_KEY2'])
+    keys = str(os.environ["PRIVATE_KEY2"] + os.environ["API_KEY2"])
     hashed = hashlib.md5(str(ts).encode() + keys.encode())
 
     return hashed.hexdigest()
@@ -102,10 +107,11 @@ def retries_session():
 def create_in_memory_csv(data, headers=None):
     stream = StringIO()
     df = pd.DataFrame(data)
-    df.to_csv(stream, mode='a', index=False, header=False)
+    df.to_csv(stream, mode="a", index=False, header=False)
     csv_string_object = stream.getvalue()
 
     return csv_string_object
+
 
 def create_in_memory_file(data):
     stream = StringIO()
@@ -113,4 +119,3 @@ def create_in_memory_file(data):
     content = stream.getvalue()
 
     return content
-

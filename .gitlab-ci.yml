@@ -30,6 +30,18 @@ Run On Dev:
   rules:
     - if: '$CI_COMMIT_BRANCH == "dev"'
 
+Run On Prod:
+  stage: run
+  script:
+    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$PROD_SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
+      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2
+      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      python -m src.main
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      allow_failure: false
+    - if: '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /dev/'
+
 Python Code Lint:
   stage: lint
   script:
