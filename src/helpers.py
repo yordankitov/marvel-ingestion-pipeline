@@ -1,11 +1,8 @@
-import ast
 import os
 import requests
 import hashlib
-import csv
 import pandas as pd
 from io import StringIO
-from datetime import datetime
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
@@ -13,66 +10,7 @@ from requests.packages.urllib3.util.retry import Retry
 BASE_URL = "https://gateway.marvel.com:443/v1/public/{type}?ts={time_stamp}&limit={limit}&apikey={api_key}&hash={hash}"
 
 
-def save_file(data, file_path):
-    with open(file_path, "w", encoding="utf-8") as output_file:
-        output_file.write(str(data))
-
-
-def read_file(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
-        content = f.readline()
-    return content
-
-
-def save_checkpoint(offset, file_path):
-    try:
-        with open(file_path, "w", encoding="utf-8") as checkpoint:
-            checkpoint.write(str(offset))
-    except Exception as e:
-        print(e)
-
-
-def store_to_csv(data, entity_type):
-    try:
-        headers = data[0].keys()
-    except Exception as e:
-        print("ERROR ENCOUNTERED WHILE EXTRACTING THE HEADERS: ")
-        print(e)
-    try:
-        with open(
-            "data/{type}.csv".format(type=entity_type), "a", encoding="utf8", newline=""
-        ) as output_file:
-            fc = csv.DictWriter(output_file, fieldnames=headers)
-            # fc.writeheader()
-            fc.writerows(data)
-    except Exception as e:
-        print("ERROR ENCOUNTERED WHILE TRYING TO SAVE YOUR DATA: ")
-        print(e)
-
-
-def read_local_checkpoint(file_path):
-    try:
-        with open(file_path, "r", encoding="utf-8") as checkpoint:
-            content = checkpoint.readline()
-            if content:
-                return content
-            else:
-                return 0
-    except Exception as e:
-        print(e)
-        return 0
-
-
-def check_entity_last_update(entity):
-    df = pd.read_csv(f"data/{entity}.csv".format(enitity=entity))
-    last_date = df["date_modified"].max()
-
-    return last_date
-
-
 def generate_url(entity, limit):
-    # ts = datetime.now()
-    # ts = str(ts).replace(' ', '_')
     ts = 1
     return BASE_URL.format(
         type=entity,

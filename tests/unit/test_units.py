@@ -57,7 +57,6 @@ def test_fetching_characters_with_successful_response(
 
 @responses.activate
 def test_chars_mock():
-    # url = requests.get(generate_url('characters', 5), params={'orderBy': 'modified', 'offset': 0, 'modifiedSince': None}).url
     response_test = {"data": {"count": 10, "total": 20, "offset": 0, "results": [5]}}
     responses.add(responses.GET, url, json=response_test)
     expected_data = response_test["data"]["results"]

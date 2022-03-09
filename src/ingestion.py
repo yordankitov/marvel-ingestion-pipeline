@@ -32,10 +32,6 @@ def ingest_entity(limit, offset, entity, order_by, modified):
             },
         )
 
-        print("length is: ", len(response.json()["data"]["results"]))
-
-        print("total is ", response.json()["data"]["count"])
-
         total_values = (
             response.json()["data"]["offset"] + response.json()["data"]["count"]
         )
@@ -58,9 +54,7 @@ def ingest_entity(limit, offset, entity, order_by, modified):
 
 
 def extract_and_save_comics_data(limit, offset, order_by):
-    count = 0
     modified = get_last_date_from_table("comics", "comics_id")
-    print(modified)
 
     main_output = StringIO()
     outputs = list()
@@ -76,10 +70,6 @@ def extract_and_save_comics_data(limit, offset, order_by):
         comics_simplified = [simplify_comics_data(x) for x in comics["data"]["results"]]
         csv_string_object = create_in_memory_csv(comics_simplified)
         outputs.append(csv_string_object)
-        # LOCAL
-        # store_to_csv(comics_simplified, 'comics')
-        print("request number", count)
-        count += 1
         offset = offset + limit
         if not another_request:
             break
@@ -93,9 +83,7 @@ def extract_and_save_comics_data(limit, offset, order_by):
 
 
 def extract_and_save_characters_data(limit, offset, order_by):
-    count = 0
     modified = get_last_date_from_table("characters", "character_id")
-    print(modified)
     main_output = StringIO()
     outputs = list()
     while True:
@@ -111,10 +99,6 @@ def extract_and_save_characters_data(limit, offset, order_by):
         ]
         csv_string_object = create_in_memory_csv(characters_simplified)
         outputs.append(csv_string_object)
-        # LOCAL
-        # store_to_csv(characters_simplified, 'characters')
-        print("request number", count)
-        count += 1
         offset = offset + limit
         if not another_request:
             break
@@ -128,9 +112,7 @@ def extract_and_save_characters_data(limit, offset, order_by):
 
 
 def extract_and_save_events_data(limit, offset, order_by):
-    count = 0
     modified = get_last_date_from_table("events", "event_id")
-    print(modified)
     main_output = StringIO()
     outputs = list()
     while True:
@@ -146,12 +128,6 @@ def extract_and_save_events_data(limit, offset, order_by):
 
         csv_string_object = create_in_memory_csv(events_simplified)
         outputs.append(csv_string_object)
-
-        # LOCAL
-        # store_to_csv(events_simplified, 'events')
-
-        print("request number", count)
-        count += 1
         offset = offset + limit
         if not another_request:
             break
@@ -184,9 +160,6 @@ def extract_and_save_creators_data(limit, offset, order_by):
         ]
         csv_string_object = create_in_memory_csv(creators_simplified)
         outputs.append(csv_string_object)
-        # LOCAL
-        # store_to_csv(creators_simplified, 'creators')
-        print("request number", count)
         count += 1
         offset = offset + limit
 
@@ -265,7 +238,6 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
                 },
             )
             comics_list.append(response.json()["data"]["results"])
-            print(entity_id, "api call has ", len(response.json()["data"]["results"]))
 
             total_values = (
                 response.json()["data"]["offset"] + response.json()["data"]["count"]

@@ -411,6 +411,7 @@ def get_last_date_from_table(table, entity_id):
 
     except Exception as e:
         print(e)
+        return None
     finally:
         con.close()
 
