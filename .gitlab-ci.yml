@@ -2,6 +2,7 @@ image: python:3.9.9
 
 stages:
   - run
+  - build
 
 
 before_script:
@@ -9,17 +10,31 @@ before_script:
   - poetry config virtualenvs.create false
   - poetry install
 
-Run On Dev:
-  stage: run
-  script:
-    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
-      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2 
-      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
-      python -m src.main
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "dev"'
+#Run On Dev:
+#  stage: run
+#  script:
+#    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
+#      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2
+#      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+#      python -m src.main
+#  rules:
+#    - if: '$CI_COMMIT_BRANCH == "dev"'
 
 #Python Code Lint:
 #  stage: lint
 #  script:
 #    - poetry run black . --check
+
+Docker Build:
+  image: docker
+  services:
+    - docker:dind
+  stage: build
+  before_script: []
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker push $CI_REGISTRY_IMAGE
+    - docker run $CI_REGISTRY_IMAGE
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
