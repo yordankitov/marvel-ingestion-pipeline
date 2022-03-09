@@ -22,4 +22,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poe.tasks]
-export_requirements = { shell = "poetry export -f requirements.txt --output build/requirements.txt" }
+export_requirements = { shell = "poetry export -f requirements.txt --output requirements.txt" }
