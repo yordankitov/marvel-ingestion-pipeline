@@ -11,46 +11,61 @@ from src.snowflake import get_last_date_from_table
 from src.aws_s3 import upload_file
 
 
+class APIUnreachableError(RuntimeError):
+    pass
+
+
 def ingest_entity(limit, offset, entity, order_by, modified):
 
     url = generate_url(entity, limit)
     http = retries_session()
-    another_request = None
 
     if modified:
         modified_since = modified
     else:
         modified_since = None
 
-    try:
-        response = http.get(
-            url,
-            params={
-                "orderBy": order_by,
-                "offset": offset,
-                "modifiedSince": modified_since,
-            },
-        )
+    # try:
+    response = fetch_entity(http, modified_since, offset, order_by, url).json()
 
-        total_values = (
-            response.json()["data"]["offset"] + response.json()["data"]["count"]
-        )
-        if response.json()["data"]["total"] <= total_values:
-            print("no data anymore")
-            another_request = False
-        else:
-            another_request = True
+    another_request = check_for_another_request(response)
 
-    except requests.exceptions.HTTPError as errh:
-        print("Http Error:", errh)
-    except requests.exceptions.ConnectionError as errc:
-        print("Error Connecting:", errc)
-    except requests.exceptions.Timeout as errt:
-        print("Timeout Error:", errt)
-    except requests.exceptions.RequestException as err:
-        print("OOps: Something Else:", err)
+    # except requests.exceptions.HTTPError as errh:
+    #     print("Http Error:", errh)
+    # except requests.exceptions.ConnectionError as errc:
+    #     print("Error Connecting:", errc)
+    # except requests.exceptions.Timeout as errt:
+    #     print("Timeout Error:", errt)
+    # except requests.exceptions.RequestException as err:
+    #     print("OOps: Something Else:", err)
+    return response, another_request
 
-    return response.json(), another_request
+
+def check_for_another_request(response):
+    total_values = (
+            response["data"]["offset"] + response["data"]["count"]
+    )
+    if response["data"]["total"] <= total_values:
+        print("no data anymore")
+        another_request = False
+    else:
+        another_request = True
+    return another_request
+
+
+def fetch_entity(http, modified_since, offset, order_by, url):
+    response = http.get(
+        url,
+        params={
+            "orderBy": order_by,
+            "offset": offset,
+            "modifiedSince": modified_since,
+        },
+    )
+    if response.status_code != 200:
+        raise APIUnreachableError(f'Marvel API failed with a status code {response.status_code}')
+    return response
+
 
 
 def extract_and_save_comics_data(limit, offset, order_by):

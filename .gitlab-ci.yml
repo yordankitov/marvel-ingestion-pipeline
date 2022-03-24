@@ -1,7 +1,7 @@
 image: python:3.9.9
 
 stages:
-  - run
+#  - run
   - test
   - lint
   - build
@@ -17,6 +17,7 @@ Testing:
   stage: test
   script:
     - poetry run pytest
+    - poetry run pytest --cov
   rules:
     - allow_failure: true
 
@@ -27,43 +28,44 @@ Code Coverage:
   only:
     - merge_requests
 
-Run On Dev:
-  stage: run
-  script:
-    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
-      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2
-      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
-      python -m src.main
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "dev"'
+#Run On Dev:
+#  stage: run
+#  script:
+#    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
+#      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2
+#      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+#      python -m src.main
+#  rules:
+#    - if: '$CI_COMMIT_BRANCH == "dev"'
+#    - if: '$CI_COMMIT_BRANCH == "improvements"'
 
-Run On Prod:
-  stage: run
-  script:
-    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$PROD_SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
-      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2
-      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
-      python -m src.main
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      allow_failure: false
-    - if: '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /dev/'
+#Run On Prod:
+#  stage: run
+#  script:
+#    - SNOW_USER=$SNOW_USER SNOW_PASS=$SNOW_PASS DB=$DB SCHEMA=$PROD_SCHEMA ACCOUNT=$ACCOUNT ROLE=$ROLE WH=$WH
+#      API_KEY2=$API_KEY2 PIRVATE_KEY2=$PRIVATE_KEY2
+#      AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+#      python -m src.main
+#  rules:
+#    - if: '$CI_COMMIT_BRANCH == "master"'
+#      allow_failure: false
+#    - if: '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /dev/'
 
 Python Code Lint:
   stage: lint
   script:
     - poetry run black . --check
 
-Docker Build:
-  image: docker
-  services:
-    - docker:dind
-  stage: build
-  before_script: []
-  script:
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker build -t $CI_REGISTRY_IMAGE .
-    - docker push $CI_REGISTRY_IMAGE
-    - docker run $CI_REGISTRY_IMAGE
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "dev"'
+#Docker Build:
+#  image: docker
+#  services:
+#    - docker:dind
+#  stage: build
+#  before_script: []
+#  script:
+#    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+#    - docker build -t $CI_REGISTRY_IMAGE .
+#    - docker push $CI_REGISTRY_IMAGE
+#    - docker run $CI_REGISTRY_IMAGE
+#  rules:
+#    - if: '$CI_COMMIT_BRANCH == "dev"'
