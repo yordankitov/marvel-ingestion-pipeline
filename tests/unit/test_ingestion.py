@@ -3,7 +3,7 @@ import responses
 import requests
 from mockito import when, mock, verify
 
-from src.helpers import retries_session, generate_url, create_in_memory_csv
+from src.helpers import retries_session, generate_url
 from src.ingestion import (
     ingest_entity,
     APIClientError,
@@ -14,17 +14,6 @@ from src.ingestion import (
 
 url = "https://gateway.marvel.com:443/v1/public/characters?ts=1&limit=5&apikey=eef4a51f95df748e9c1effea6cc244f2&hash=fdc2fde7473f59a1544c0471493d6e1a&orderBy=modified&offset=0"
 
-
-def test_retries_session_returns_requests_session_object():
-    session = retries_session()
-    assert isinstance(session, requests.Session)
-
-
-def test_create_in_memory_csv_contains_expected_data():
-    data_to_be_transformed = [{"col1": "val1", "col2": "val2"}]
-    expected_data = "val1,val2\n"
-    result = create_in_memory_csv(data_to_be_transformed)
-    assert expected_data == result
 
 
 ####################################################
