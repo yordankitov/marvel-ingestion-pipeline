@@ -11,7 +11,11 @@ from src.snowflake import get_last_date_from_table
 from src.aws_s3 import upload_file
 
 
-class APIUnreachableError(RuntimeError):
+class APIClientError(RuntimeError):
+    pass
+
+
+class APIServerError(RuntimeError):
     pass
 
 
@@ -42,9 +46,7 @@ def ingest_entity(limit, offset, entity, order_by, modified):
 
 
 def check_for_another_request(response):
-    total_values = (
-            response["data"]["offset"] + response["data"]["count"]
-    )
+    total_values = response["data"]["offset"] + response["data"]["count"]
     if response["data"]["total"] <= total_values:
         print("no data anymore")
         another_request = False
@@ -62,10 +64,15 @@ def fetch_entity(http, modified_since, offset, order_by, url):
             "modifiedSince": modified_since,
         },
     )
-    if response.status_code != 200:
-        raise APIUnreachableError(f'Marvel API failed with a status code {response.status_code}')
+    if response.status_code in [400, 401, 403, 404, 409]:
+        raise APIClientError(
+            f"Marvel API failed with a client error code {response.status_code}"
+        )
+    elif response.status_code in [500, 501, 503, 504]:
+        raise APIServerError(
+            f"Marvel API failed with a server error code {response.status_code}"
+        )
     return response
-
 
 
 def extract_and_save_comics_data(limit, offset, order_by):

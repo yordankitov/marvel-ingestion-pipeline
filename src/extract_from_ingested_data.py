@@ -108,9 +108,6 @@ def extract_from_ingested_characters_comics_data(limit):
             return 0
     else:
         index = 0
-    print(index, len(data))
-    print(checkpoint)
-    print(len(data))
 
     for row in data[index:]:
 
@@ -152,9 +149,6 @@ def extract_from_ingested_characters_events_data(limit):
             return 0
     else:
         index = 0
-    print(index, len(data))
-    print(checkpoint)
-    print(len(data))
 
     for row in data[index:]:
 
@@ -196,8 +190,6 @@ def extract_from_ingested_creators_comics_data(limit):
             return 0
     else:
         index = 0
-    print(checkpoint)
-    print(len(data))
 
     for row in data[index:]:
 

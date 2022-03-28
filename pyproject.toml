@@ -11,6 +11,7 @@ snowflake-connector-python = "^2.7.4"
 boto3 = "^1.21.11"
 pandas = "^1.4.1"
 pyarrow = "6.0.0"
+prefect = "^1.1.0"
 
 
 [tool.poetry.dev-dependencies]
