@@ -1,13 +1,13 @@
 import snowflake.connector
 import os
 
-user = os.getenv("SNOW_USER")
-password = os.getenv("SNOW_PASS")
-db = os.getenv("DB")
-account = os.getenv("ACCOUNT")
-schema = os.getenv("SCHEMA")
-role = os.getenv("ROLE")
-wh = os.getenv("WH")
+user = os.getenv("SNOW_USER1")
+password = os.getenv("SNOW_PASS1")
+db = os.getenv("DB1")
+account = os.getenv("ACCOUNT1")
+schema = os.getenv("SCHEMA1")
+role = os.getenv("ROLE1")
+wh = os.getenv("WH1")
 
 
 def database_config(con, schema):
@@ -17,65 +17,61 @@ def database_config(con, schema):
     :param schema: the schema used for the config
     :return:
     """
-    create_schema = f"create schema if not exists {schema}"
 
-    create_characters_table = """create TABLE if not exists characters (
-    	CHARACTER_ID VARCHAR NOT NULL,
-    	NAME VARCHAR,
-    	DESCRIPTION VARCHAR,
-    	DATE_MODIFIED VARCHAR,
-    	AVAILABLE_COMICS NUMBER,
-    	FETCHED_COMICS NUMBER,
-    	LIST_OF_COMICS VARCHAR,
-    	AVAILABLE_EVENTS NUMBER,
-    	FETCHED_EVENTS NUMBER,
-    	LIST_OF_EVENTS VARCHAR,
-    	primary key (CHARACTER_ID)
-    );"""
+    create_schema = create_schema_stmt(schema)
 
-    create_creators_table = """create TABLE if not exists creators (
-    	CREATOR_ID VARCHAR NOT NULL,
-    	FIRST_NAME VARCHAR,
-    	MIDDLE_NAME VARCHAR,
-    	LAST_NAME VARCHAR,
-    	SUFFIX VARCHAR,
-    	FULL_NAME VARCHAR,
-    	DATE_MODIFIED VARCHAR,
-    	AVAILABLE_COMICS NUMBER,
-    	FETCHED_COMICS NUMBER,
-    	LIST_OF_COMICS VARCHAR,
-    	AVAILABLE_STORIES NUMBER,
-    	FETCHED_STORIES NUMBER,
-    	LIST_OF_STORIES VARCHAR,
-    	AVAILABLE_SERIES NUMBER,
-    	FETCHED_SERIES NUMBER,
-    	LIST_OF_SERIES VARCHAR,
-    	AVAILABLE_EVENTS NUMBER,
-    	FETCHED_EVENTS NUMBER,
-    	LIST_OF_EVENTS VARCHAR,
-    	primary key (CREATOR_ID)
-    );"""
+    create_characters_table = create_characters_table_stmt()
 
-    create_events_table = """create TABLE if not exists events (
-    	EVENT_ID VARCHAR NOT NULL,
-    	TITLE VARCHAR,
-    	DESCRIPTION VARCHAR,
-    	DATE_MODIFIED VARCHAR,
-    	AVAILABLE_CREATORS NUMBER,
-    	FETCHED_CREATORS NUMBER,
-    	LIST_OF_CREATORS VARCHAR,
-    	AVAILABLE_STORIES NUMBER,
-    	FETCHED_STORIES NUMBER,
-    	LIST_OF_STORIES VARCHAR,
-    	AVAILABLE_COMICS NUMBER,
-    	FETCHED_COMICS NUMBER,
-    	LIST_OF_COMICS VARCHAR,
-    	AVAILABLE_SERIES NUMBER,
-    	FETCHED_SERIES NUMBER,
-    	LIST_OF_SERIES VARCHAR,
-    	primary key (EVENT_ID)
-    );"""
+    create_creators_table = create_creators_table_stmt()
 
+    create_events_table = create_events_table_stmt()
+
+    create_comics_table = create_comics_table_stmt()
+
+    create_characters_comics_table = create_characters_comics_table_stmt()
+
+    create_characters_events_table = create_characters_events_table_stmt()
+
+    create_creators_comics_table = create_creators_comics_table_stmt()
+
+    try:
+        con.cursor().execute(create_schema)
+        con.cursor().execute(create_characters_table)
+        con.cursor().execute(create_creators_table)
+        con.cursor().execute(create_comics_table)
+        con.cursor().execute(create_events_table)
+        con.cursor().execute(create_characters_comics_table)
+        con.cursor().execute(create_characters_events_table)
+        con.cursor().execute(create_creators_comics_table)
+    except Exception as e:
+        print(e)
+
+
+def create_creators_comics_table_stmt():
+    create_creators_comics_table = """create TABLE if not exists creators_in_comics (
+      	CREATOR_ID VARCHAR,
+      	COMICS_NAME VARCHAR
+        );"""
+    return create_creators_comics_table
+
+
+def create_characters_events_table_stmt():
+    create_characters_events_table = """create TABLE if not exists characters_in_events (
+      	CHARACTER_ID VARCHAR,
+      	EVENT_NAME VARCHAR
+      	);"""
+    return create_characters_events_table
+
+
+def create_characters_comics_table_stmt():
+    create_characters_comics_table = """create TABLE if not exists characters_in_comics (
+    	CHARACTER_ID VARCHAR,
+    	COMICS_NAME VARCHAR
+    	);"""
+    return create_characters_comics_table
+
+
+def create_comics_table_stmt():
     create_comics_table = """create TABLE if not exists comics (
     	COMICS_ID VARCHAR NOT NULL,
     	DIGITAL_ID VARCHAR,
@@ -105,32 +101,78 @@ def database_config(con, schema):
     	LIST_OF_EVENTS VARCHAR,
     	primary key (COMICS_ID)
     );"""
+    return create_comics_table
 
-    create_characters_comics_table = """create TABLE if not exists characters_in_comics (
-    	CHARACTER_ID VARCHAR,
-    	COMICS_NAME VARCHAR
-    	);"""
 
-    create_characters_events_table = """create TABLE if not exists characters_in_events (
-      	CHARACTER_ID VARCHAR,
-      	EVENT_NAME VARCHAR
-      	);"""
+def create_events_table_stmt():
+    create_events_table = """create TABLE if not exists events (
+    	EVENT_ID VARCHAR NOT NULL,
+    	TITLE VARCHAR,
+    	DESCRIPTION VARCHAR,
+    	DATE_MODIFIED VARCHAR,
+    	AVAILABLE_CREATORS NUMBER,
+    	FETCHED_CREATORS NUMBER,
+    	LIST_OF_CREATORS VARCHAR,
+    	AVAILABLE_STORIES NUMBER,
+    	FETCHED_STORIES NUMBER,
+    	LIST_OF_STORIES VARCHAR,
+    	AVAILABLE_COMICS NUMBER,
+    	FETCHED_COMICS NUMBER,
+    	LIST_OF_COMICS VARCHAR,
+    	AVAILABLE_SERIES NUMBER,
+    	FETCHED_SERIES NUMBER,
+    	LIST_OF_SERIES VARCHAR,
+    	primary key (EVENT_ID)
+    );"""
+    return create_events_table
 
-    create_creators_comics_table = """create TABLE if not exists creators_in_comics (
-      	CREATOR_ID VARCHAR,
-      	COMICS_NAME VARCHAR
-        );"""
-    try:
-        con.cursor().execute(create_schema)
-        con.cursor().execute(create_characters_table)
-        con.cursor().execute(create_creators_table)
-        con.cursor().execute(create_comics_table)
-        con.cursor().execute(create_events_table)
-        con.cursor().execute(create_characters_comics_table)
-        con.cursor().execute(create_characters_events_table)
-        con.cursor().execute(create_creators_comics_table)
-    except Exception as e:
-        print(e)
+
+def create_creators_table_stmt():
+    create_creators_table = """create TABLE if not exists creators (
+    	CREATOR_ID VARCHAR NOT NULL,
+    	FIRST_NAME VARCHAR,
+    	MIDDLE_NAME VARCHAR,
+    	LAST_NAME VARCHAR,
+    	SUFFIX VARCHAR,
+    	FULL_NAME VARCHAR,
+    	DATE_MODIFIED VARCHAR,
+    	AVAILABLE_COMICS NUMBER,
+    	FETCHED_COMICS NUMBER,
+    	LIST_OF_COMICS VARCHAR,
+    	AVAILABLE_STORIES NUMBER,
+    	FETCHED_STORIES NUMBER,
+    	LIST_OF_STORIES VARCHAR,
+    	AVAILABLE_SERIES NUMBER,
+    	FETCHED_SERIES NUMBER,
+    	LIST_OF_SERIES VARCHAR,
+    	AVAILABLE_EVENTS NUMBER,
+    	FETCHED_EVENTS NUMBER,
+    	LIST_OF_EVENTS VARCHAR,
+    	primary key (CREATOR_ID)
+    );"""
+    return create_creators_table
+
+
+def create_characters_table_stmt():
+    create_characters_table = """create TABLE if not exists characters (
+    	CHARACTER_ID VARCHAR NOT NULL,
+    	NAME VARCHAR,
+    	DESCRIPTION VARCHAR,
+    	DATE_MODIFIED VARCHAR,
+    	AVAILABLE_COMICS NUMBER,
+    	FETCHED_COMICS NUMBER,
+    	LIST_OF_COMICS VARCHAR,
+    	AVAILABLE_EVENTS NUMBER,
+    	FETCHED_EVENTS NUMBER,
+    	LIST_OF_EVENTS VARCHAR,
+    	primary key (CHARACTER_ID)
+    );"""
+    return create_characters_table
+
+
+def create_schema_stmt(schema):
+    create_schema = f"create schema if not exists {schema}"
+    return create_schema
 
 
 def create_s3_stages_for_snowflake(con, db, schema):
