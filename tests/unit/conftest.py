@@ -8,7 +8,7 @@ from src.snowflake import create_characters_table_stmt
 SNOWFLAKE_TEST_PARAMS = {
     "user": "TAPDE_USER_yordan",
     "role": "TAPDE_ROLE_YORDAN",
-    "password": "Dragclimber0",
+    "password": "",
     "account": "infinitelambda.eu-west-1",
     "warehouse": "TAPDE_WH",
     "database": "TAPDE_DB_YORDAN"
