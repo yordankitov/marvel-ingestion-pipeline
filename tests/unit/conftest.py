@@ -16,7 +16,7 @@ SNOWFLAKE_TEST_PARAMS = {
 
 # SNOWFLAKE_TEST_PARAMS = {
 #     "user": "yordankitov",
-#     "password": "Dragclimber0",
+#     "password": "",
 #     "db": "SNOWFLAKE_SAMPLE_DATA",
 #     "schema": "WEATHER",
 #     "account": "vz89800.eu-central-1",
