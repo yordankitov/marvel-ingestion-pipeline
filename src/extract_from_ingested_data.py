@@ -3,8 +3,8 @@ import ast
 from io import StringIO
 from datetime import datetime
 
-from src.comics import simplify_comics_from_characters, simplify_comics_from_creators
-from src.events import simplify_events_from_characters
+from src.srialisers import simplify_comics_from_characters, simplify_comics_from_creators
+from src.srialisers import simplify_events_from_characters
 from src.helpers import retries_session, create_in_memory_file, create_in_memory_csv
 from src.aws_s3 import upload_file
 from src.snowflake import get_table_data, get_last_id_from_table

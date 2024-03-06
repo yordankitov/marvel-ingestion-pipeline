@@ -2,10 +2,12 @@ import requests
 from datetime import datetime
 from io import StringIO
 
-from src.comics import simplify_comics_data
-from src.events import simplify_events_data
-from src.characters import simplify_character_data
-from src.creators import simplify_creators_data
+from src.srialisers import (
+    simplify_comics_data,
+    simplify_events_data,
+    simplify_character_data,
+    simplify_creators_data,
+)
 from src.helpers import create_in_memory_csv, generate_url, retries_session
 from src.snowflake import get_last_date_from_table
 from src.aws_s3 import upload_file
@@ -20,7 +22,6 @@ class APIServerError(RuntimeError):
 
 
 def ingest_entity(limit, offset, entity, order_by, modified):
-
     url = generate_url(entity, limit)
     http = retries_session()
 
@@ -219,7 +220,7 @@ def ingest_events_from_characters(http, char_id, offset, limit, modified=None):
             print(char_id, "first call has ", len(response.json()["data"]["results"]))
 
             total_values = (
-                response.json()["data"]["offset"] + response.json()["data"]["count"]
+                    response.json()["data"]["offset"] + response.json()["data"]["count"]
             )
             if response.json()["data"]["total"] <= total_values:
                 break
@@ -262,7 +263,7 @@ def ingest_comics_from_entity(http, entity_id, offset, limit, entity, modified=N
             comics_list.append(response.json()["data"]["results"])
 
             total_values = (
-                response.json()["data"]["offset"] + response.json()["data"]["count"]
+                    response.json()["data"]["offset"] + response.json()["data"]["count"]
             )
 
             if response.json()["data"]["total"] <= total_values:

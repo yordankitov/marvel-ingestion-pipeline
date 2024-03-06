@@ -7,18 +7,17 @@ resource = boto3.resource("s3")
 def create_bucket():
     try:
         bucket_response = resource.create_bucket(
-            Bucket="il-tapde-final-exercise-yordan",
+            Bucket="marvel",
             CreateBucketConfiguration={"LocationConstraint": "eu-central-1"},
         )
+        return bucket_response
     except Exception as e:
         print(e)
-
-    return bucket_response
 
 
 def check_bucket_exists_and_you_have_permission_for_access():
     try:
-        response = client.head_bucket(Bucket="il-tapde-final-exercise-yordan")
+        response = client.head_bucket(Bucket="marvel")
 
         if response.get("ResponseMetadata").get("HTTPStatusCode") != 200:
             print("Bucket does not exist")
@@ -32,6 +31,6 @@ def check_bucket_exists_and_you_have_permission_for_access():
 
 def upload_file(file_name, content):
     try:
-        resource.Object("il-tapde-final-exercise-yordan", file_name).put(Body=content)
+        resource.Object("marvel", file_name).put(Body=content)
     except Exception as e:
         print(e)

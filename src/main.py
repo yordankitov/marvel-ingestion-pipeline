@@ -10,16 +10,17 @@ from src.extract_from_ingested_data import (
     extract_from_ingested_creators_comics_data,
 )
 from src.snowflake import *
+from src.aws_secrets import get_secret_values
 
-# client = boto3.client('s3')
-user = os.getenv("SNOW_USER")
-password = os.getenv("SNOW_PASS")
-db = os.getenv("DB")
-account = os.getenv("ACCOUNT")
-schema = os.getenv("SCHEMA")
-role = os.getenv("ROLE")
-wh = os.getenv("WH")
+secrets = get_secret_values("marvel")
 
+user = secrets.get("user")
+password = secrets.get("password")
+db = secrets.get("database")
+account = secrets.get("account")
+schema = secrets.get("schema")
+role = secrets.get("role")
+wh = secrets.get("warehouse")
 
 def characters():
     print("characters")

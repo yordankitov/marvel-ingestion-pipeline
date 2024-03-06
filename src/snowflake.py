@@ -1,13 +1,16 @@
 import snowflake.connector
-import os
 
-user = os.getenv("SNOW_USER1")
-password = os.getenv("SNOW_PASS1")
-db = os.getenv("DB1")
-account = os.getenv("ACCOUNT1")
-schema = os.getenv("SCHEMA1")
-role = os.getenv("ROLE1")
-wh = os.getenv("WH1")
+from src.aws_secrets import get_secret_values
+
+secrets = get_secret_values("marvel")
+
+user = secrets.get("user")
+password = secrets.get("password")
+db = secrets.get("database")
+account = secrets.get("account")
+schema = secrets.get("schema")
+role = secrets.get("role")
+wh = secrets.get("warehouse")
 
 
 def database_config(con, schema):
