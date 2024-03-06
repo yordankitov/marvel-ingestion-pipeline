@@ -23,6 +23,8 @@ SNOWFLAKE_TEST_PARAMS = {
 #     "role": "ACCOUNTADMIN",
 #     "wh": "COMPUTE_WH"
 # }
+
+
 @pytest.fixture(scope="session")
 def marvel_schema():
 
@@ -34,6 +36,7 @@ def marvel_schema():
 
     with snowflake.connector.connect(**SNOWFLAKE_TEST_PARAMS) as conn:
         conn.cursor().execute(f"drop schema {schema_name};")
+
 
 @pytest.fixture(scope='session')
 def characters_table(marvel_schema):
